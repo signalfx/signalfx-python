@@ -24,11 +24,11 @@ import signalfx
 sfx = signalfx.SignalFx(api_token='MY_TOKEN')
 sfx.send(
     gauges=[
-      {'name': 'myfunc.time', 'value': 532},
+      {'metric': 'myfunc.time', 'value': 532},
       ...
     ],
     counters=[
-      {'name': 'myfunc.calls', 'value': 42},
+      {'metric': 'myfunc.calls', 'value': 42},
       ...
     ])
 ```

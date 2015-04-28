@@ -33,12 +33,12 @@ class SignalFxReporter(reporter.Reporter):
 
         for metric, details in metrics.items():
             for submetric, value in details.items():
-                info = {'name': metric, 'value': value}
+                info = {'metric': metric, 'value': value}
                 if submetric == 'count':
                     counters.append(info)
                 else:
                     if submetric != 'value':
-                        info['name'] = '{}.{}'.format(info['name'], submetric)
+                        info['metric'] += '.{}'.format(submetric)
                     gauges.append(info)
 
         r = self._sfx.send(gauges, counters)
