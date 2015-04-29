@@ -5,7 +5,7 @@ import logging
 import os
 import requests
 
-DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com/v2'
+DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com/v1'
 DEFAULT_INGEST_ENDPOINT_URL = 'https://ingest.signalfx.com/v2'
 
 
