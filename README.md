@@ -33,6 +33,23 @@ sfx.send(
     ])
 ```
 
+### Sending events
+
+Events can be sent to SignalFx via the `send_event` function. The
+event type must be specified, and dimensions and extra event properties
+can be supplied as well.
+
+```python
+sfx.send_event(
+    event_type='deployments',
+    dimensions={
+        'host': 'myhost',
+        'service': 'myservice',
+        'instance': 'myinstance'},
+    properties={
+        'version': '2015.04.29-01'})
+```
+
 ### Pyformance reporter
 
 `pyformance` is a Python library that provides CodaHale-style metrics in
