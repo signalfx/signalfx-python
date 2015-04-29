@@ -9,7 +9,29 @@ DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com/v2'
 DEFAULT_INGEST_ENDPOINT_URL = 'https://ingest.signalfx.com/v2'
 
 
-class SignalFx(object):
+class __BaseSignalFx(object):
+
+    def __init__(self, api_token=None, api_endpoint=DEFAULT_API_ENDPOINT_URL,
+                 ingest_endpoint=DEFAULT_INGEST_ENDPOINT_URL, timeout=1):
+        self._api_token = api_token
+        self._api_endpoint = api_endpoint
+        self._ingest_endpoint = ingest_endpoint
+        self._timeout = timeout
+
+    def send(self, gauges=None, counters=None):
+        if not gauges and not counters:
+            return None
+
+        # TODO: switch to protocol buffers.
+        data = {'gauge': gauges, 'counter': counters}
+        logging.debug('Sending to SignalFx: %s', data)
+        return data
+
+
+SignalFxLoggingStub = __BaseSignalFx
+
+
+class SignalFx(__BaseSignalFx):
     """SignalFx API client.
 
     This class presents a programmatic interface to SignalFx's metadata and
@@ -19,10 +41,8 @@ class SignalFx(object):
 
     def __init__(self, api_token, api_endpoint=DEFAULT_API_ENDPOINT_URL,
                  ingest_endpoint=DEFAULT_INGEST_ENDPOINT_URL, timeout=1):
-        self._api_token = api_token
-        self._api_endpoint = api_endpoint
-        self._ingest_endpoint = ingest_endpoint
-        self._timeout = timeout
+        super(SignalFx, self).__init__(
+            self, api_token, api_endpoint, ingest_endpoint, timeout)
 
     def send(self, gauges=None, counters=None):
         """Send the given metrics to SignalFx.
@@ -33,13 +53,10 @@ class SignalFx(object):
             counters (list): a list of dictionaries representing the counters
                 to report.
         """
-
-        if not gauges and not counters:
+        data = super(SignalFx, self).send(self, gauges, counters)
+        if not data:
             return None
 
-        # TODO: switch to protocol buffers.
-        data = {'gauge': gauges, 'counter': counters}
-        logging.debug('Sending to SignalFx: %s', data)
         return requests.post(
                 os.path.join(self._ingest_endpoint, 'datapoint'),
                 headers={'Content-Type': 'application/json',
