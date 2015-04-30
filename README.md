@@ -73,3 +73,5 @@ callme()
 gauge('test').set_value(42)
 ...
 ```
+
+See `example.py` for a complete code example using Pyformance.
