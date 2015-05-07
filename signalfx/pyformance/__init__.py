@@ -28,20 +28,28 @@ class SignalFxReporter(reporter.Reporter):
         registry = registry or self.registry
         metrics = registry.dump_metrics()
 
+        timestamp = timestamp or int(self.clock.time())
+        sf_timestamp = timestamp * 10**3
+
+        cumulative_counters = []
         gauges = []
-        counters = []
 
         for metric, details in metrics.items():
             for submetric, value in details.items():
-                info = {'metric': metric, 'value': value}
+                info = {
+                    'metric': metric,
+                    'value': value,
+                    timestamp: sf_timestamp
+                }
                 if submetric == 'count':
-                    counters.append(info)
+                    cumulative_counters.append(info)
                 else:
                     if submetric != 'value':
                         info['metric'] += '.{}'.format(submetric)
                     gauges.append(info)
 
-        r = self._sfx.send(gauges, counters)
+        r = self._sfx.send(
+            cumulative_counters=cumulative_counters, gauges=gauges)
         if r is None:
             return
         if not r:

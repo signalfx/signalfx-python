@@ -3,6 +3,8 @@
 import json
 import logging
 import os
+import pprint
+
 import requests
 
 DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com/v1'
@@ -18,13 +20,17 @@ class __BaseSignalFx(object):
         self._ingest_endpoint = ingest_endpoint
         self._timeout = timeout
 
-    def send(self, gauges=None, counters=None):
-        if not gauges and not counters:
+    def send(self, cumulative_counters=None, gauges=None, counters=None):
+        if not gauges and not cumulative_counters and not counters:
             return None
 
         # TODO: switch to protocol buffers.
-        data = {'gauge': gauges, 'counter': counters}
-        logging.debug('Sending to SignalFx: %s', data)
+        data = {
+            'cumulative_counter': cumulative_counters,
+            'gauge': gauges,
+            'counter': counters,
+        }
+        logging.debug('Sending to SignalFx: %s', pprint.pformat(data))
         return data
 
     def send_event(self, event_type, dimensions=None, properties=None):
@@ -63,16 +69,20 @@ class SignalFx(__BaseSignalFx):
             data=json.dumps(data),
             timeout=self._timeout)
 
-    def send(self, gauges=None, counters=None):
+    def send(self, cumulative_counters=None, gauges=None, counters=None):
         """Send the given metrics to SignalFx.
 
         Args:
+            cumulative_counters (list): a list of dictionaries representing the
+                cumulative counters to report.
             gauges (list): a list of dictionaries representing the gauges to
                 report.
             counters (list): a list of dictionaries representing the counters
                 to report.
         """
-        data = super(SignalFx, self).send(gauges, counters)
+        data = super(SignalFx, self).send(
+            cumulative_counters=cumulative_counters, gauges=gauges,
+            counters=counters)
         if not data:
             return None
 
