@@ -18,9 +18,11 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     install_requires=[
-        'pyformance>=0.3.1',
         'requests==2.5.3',
     ],
+    extras_require = {
+        'pyformance': ['pyformance>=0.3.1'],
+    },
     classifiers=[],
     url='https://github.com/signalfx/signalfx-python',
 )
