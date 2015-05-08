@@ -2,13 +2,12 @@
 
 import json
 import logging
-import os
 import pprint
 
 import requests
 
-DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com/v1'
-DEFAULT_INGEST_ENDPOINT_URL = 'https://ingest.signalfx.com/v2'
+DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com'
+DEFAULT_INGEST_ENDPOINT_URL = 'https://ingest.signalfx.com'
 
 
 class __BaseSignalFx(object):
@@ -16,8 +15,8 @@ class __BaseSignalFx(object):
     def __init__(self, api_token=None, api_endpoint=DEFAULT_API_ENDPOINT_URL,
                  ingest_endpoint=DEFAULT_INGEST_ENDPOINT_URL, timeout=1):
         self._api_token = api_token
-        self._api_endpoint = api_endpoint
-        self._ingest_endpoint = ingest_endpoint
+        self._api_endpoint = api_endpoint.rstrip('/')
+        self._ingest_endpoint = ingest_endpoint.rstrip('/')
         self._timeout = timeout
 
     def send(self, cumulative_counters=None, gauges=None, counters=None):
@@ -87,7 +86,7 @@ class SignalFx(__BaseSignalFx):
             return None
 
         return self._post(
-            os.path.join(self._ingest_endpoint, 'datapoint'),
+            '{0}/{1}'.format(self._ingest_endpoint, 'v2/datapoint'),
             data)
 
     def send_event(self, event_type, dimensions=None, properties=None):
@@ -105,5 +104,5 @@ class SignalFx(__BaseSignalFx):
             return None
 
         return self._post(
-            os.path.join(self._api_endpoint, 'event'),
+            '{0}/{1}'.format(self._api_endpoint, 'v1/event'),
             data)
