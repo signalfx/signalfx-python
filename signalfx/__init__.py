@@ -10,6 +10,10 @@ DEFAULT_API_ENDPOINT_URL = 'https://api.signalfx.com'
 DEFAULT_INGEST_ENDPOINT_URL = 'https://ingest.signalfx.com'
 
 
+class Error(Exception):
+    """Base error class for this module."""
+
+
 class __BaseSignalFx(object):
 
     def __init__(self, api_token=None, api_endpoint=DEFAULT_API_ENDPOINT_URL,
