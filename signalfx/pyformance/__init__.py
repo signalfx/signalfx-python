@@ -21,11 +21,18 @@ class SignalFxReporter(reporter.Reporter):
     def __init__(self, api_token, url=signalfx.DEFAULT_INGEST_ENDPOINT_URL,
                  registry=None, reporting_interval=1,
                  default_dimensions=None):
+        if (default_dimensions is not None
+                and not isinstance(default_dimensions, dict)):
+            raise signalfx.Error('The default_dimensions argument must be a '
+                                 'dict of string keys to string values.')
+
         reporter.Reporter.__init__(self, registry=registry,
                                    reporting_interval=reporting_interval)
+
         self.default_dimensions = default_dimensions
         if default_dimensions is None:
             self.default_dimensions = {}
+
         self._sfx = signalfx.SignalFx(api_token, ingest_endpoint=url)
 
     def report_now(self, registry=None, timestamp=None):
