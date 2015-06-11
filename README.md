@@ -21,7 +21,7 @@ The "raw" usage of the library for reporting data goes as follows:
 ```python
 import signalfx
 
-sfx = signalfx.SignalFx(api_token='MY_TOKEN')
+sfx = signalfx.SignalFx('MY_TOKEN')
 sfx.send(
     gauges=[
       {'metric': 'myfunc.time', 'value': 532},
@@ -33,6 +33,8 @@ sfx.send(
     ])
 ```
 
+See `examples/generic_usecase.py` for a complete code example for Reporting data.
+
 ### Sending events
 
 Events can be sent to SignalFx via the `send_event` function. The
@@ -40,6 +42,9 @@ event type must be specified, and dimensions and extra event properties
 can be supplied as well.
 
 ```python
+import signalfx
+
+sfx = signalfx.SignalFx('MY_TOKEN')
 sfx.send_event(
     event_type='deployments',
     dimensions={
@@ -49,6 +54,8 @@ sfx.send_event(
     properties={
         'version': '2015.04.29-01'})
 ```
+
+See `examples/generic_usecase.py` for a complete code example Sending events.
 
 ### Pyformance reporter
 
@@ -74,4 +81,4 @@ gauge('test').set_value(42)
 ...
 ```
 
-See `example.py` for a complete code example using Pyformance.
+See `examples/pyformance_usecase.py` for a complete code example using Pyformance.

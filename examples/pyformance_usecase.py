@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 
+import os
+import sys
+sys.path.append(os.path.realpath('..'))
+
 import argparse
 import logging
-import pyformance as pyf
 import os
+import pyformance as pyf
 import signalfx.pyformance
-import sys
 import time
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-            description='SignalFx metrics reporting demo')
+        description='SignalFx metrics reporting demo')
     parser.add_argument('token', help='Your SignalFx API access token')
     options = parser.parse_args()
 
