@@ -10,17 +10,23 @@ from signalfx.version import name, version
 with open('README.md') as readme:
     long_description = readme.read()
 
+with open('requirements.txt') as f:
+    requirements = [line.strip() for line in f.readlines()]
+
 setup(
     name=name,
     version=version,
-    description='SignalFx Python support',
+    author='SignalFx, Inc',
+    author_email='info@signalfx.com',
+    description='SignalFx Python Library',
+    license='Apache Software License v2',
     long_description=long_description,
     zip_safe=True,
     packages=find_packages(),
-    install_requires=[
-        'pyformance>=0.3.1',
-        'requests==2.5.3',
+    install_requires=requirements,
+    classifiers=[
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
     ],
-    classifiers=[],
     url='https://github.com/signalfx/signalfx-python',
 )

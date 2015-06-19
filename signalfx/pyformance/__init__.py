@@ -18,12 +18,12 @@ class SignalFxReporter(reporter.Reporter):
     by pyformance) will be used.
     """
 
-    def __init__(self, api_token, url=signalfx.DEFAULT_INGEST_ENDPOINT_URL,
-                 registry=None, reporting_interval=1,
-                 default_dimensions=None):
+    def __init__(
+            self, api_token, ingest_endpoint=signalfx.DEFAULT_INGEST_ENDPOINT,
+            registry=None, reporting_interval=1, default_dimensions=None):
         if (default_dimensions is not None
                 and not isinstance(default_dimensions, dict)):
-            raise signalfx.Error('The default_dimensions argument must be a '
+            raise TypeError('The default_dimensions argument must be a '
                                  'dict of string keys to string values.')
 
         reporter.Reporter.__init__(self, registry=registry,
@@ -33,7 +33,8 @@ class SignalFxReporter(reporter.Reporter):
         if default_dimensions is None:
             self.default_dimensions = {}
 
-        self._sfx = signalfx.SignalFx(api_token, ingest_endpoint=url)
+        self._sfx = signalfx.SignalFx(api_token,
+                                      ingest_endpoint=ingest_endpoint)
 
     def report_now(self, registry=None, timestamp=None):
         registry = registry or self.registry
@@ -50,12 +51,12 @@ class SignalFxReporter(reporter.Reporter):
                 info = {
                     'metric': metric,
                     'value': value,
-                    timestamp: sf_timestamp
+                    'timestamp': sf_timestamp
                 }
                 if len(self.default_dimensions) > 0:
-                    # TODO(wt): Plumbing in custom dimensions at some point will
-                    # require copying the default dimensions instead of using
-                    # them directly.
+                    # TODO(wt): Plumbing in custom dimensions at some point
+                    # will require copying the default dimensions instead of
+                    # using them directly.
                     info['dimensions'] = self.default_dimensions
                 if submetric == 'count':
                     cumulative_counters.append(info)
