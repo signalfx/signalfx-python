@@ -7,6 +7,12 @@ to interact with SignalFx or report metric and event data to SignalFx.
 It is also the base for metric reporters that integrate with common
 Python-based metric collections tools or libraries.
 
+## Installation
+
+```
+pip install signalfx
+```
+
 ## Usage
 
 ### API access token
