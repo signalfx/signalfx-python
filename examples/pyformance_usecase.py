@@ -6,7 +6,6 @@ sys.path.append(os.path.realpath('..'))
 
 import argparse
 import logging
-import os
 import pyformance as pyf
 import signalfx.pyformance
 import time
