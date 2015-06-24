@@ -3,6 +3,7 @@
 import collections
 import json
 import logging
+import pprint
 import Queue
 import requests
 from threading import Thread
@@ -178,6 +179,9 @@ class SignalFxClient(__BaseSignalFx):
 
     def _post(self, data, url, session=None):
         _session = session or self._ingest_session
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logging.debug(
+                'Raw datastream being sent: %s', pprint.pformat(data))
         try:
             response = _session.post(url, data=data, timeout=self._timeout)
             logging.debug('Sending to SignalFx %s (%d %s)',
@@ -207,14 +211,23 @@ class ProtoBufSignalFx(SignalFxClient):
         pbuf_dp = sf_pbuf.DataPoint()
         self._assign_value_type(pbuf_dp, datapoint['value'])
         pbuf_dp.metric = datapoint['metric']
-        if 'timestamp' in datapoint:
+        if datapoint.get('timestamp'):
             pbuf_dp.timestamp = int(datapoint['timestamp'])
-        if 'metric_type' in datapoint:
+        if datapoint.get('metric_type'):
             pbuf_dp.metricType = getattr(
                 sf_pbuf, datapoint['metric_type'].upper())
-        if 'dimensions' in datapoint:
-            pbuf_dp.dimensions = datapoint['dimensions']
+        if datapoint.get('dimensions'):
+            self._set_datapoint_dimensions(pbuf_dp, datapoint['dimensions'])
         self._queue.put(pbuf_dp)
+
+    def _set_datapoint_dimensions(self, pbuf_dp, dimensions):
+        if not isinstance(dimensions, dict):
+            raise ValueError('Invalid dimensions {0}; must be a dict!'
+                             .format(dimensions))
+        for key, value in dimensions.items():
+            dim = pbuf_dp.dimensions.add()
+            dim.key = key
+            dim.value = value
 
     def _assign_value_type(self, pbuf_dp, value):
         if isinstance(value, int):

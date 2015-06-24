@@ -24,7 +24,7 @@ class SignalFxReporter(reporter.Reporter):
         if (default_dimensions is not None
                 and not isinstance(default_dimensions, dict)):
             raise TypeError('The default_dimensions argument must be a '
-                                 'dict of string keys to string values.')
+                            'dict of string keys to string values.')
 
         reporter.Reporter.__init__(self, registry=registry,
                                    reporting_interval=reporting_interval)
