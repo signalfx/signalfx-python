@@ -7,6 +7,7 @@ to interact with SignalFx or report metric and event data to SignalFx.
 It is also the base for metric reporters that integrate with common
 Python-based metric collections tools or libraries.
 
+
 ## Installation
 
 ```
@@ -89,16 +90,17 @@ gauge('test').set_value(42)
 
 See `examples/pyformance_usecase.py` for a complete code example using Pyformance.
 
+
 ## Known Issues
 
-1. Sending only 1 datapoint and not seeing it in the chart.
+#### Sending only 1 datapoint and not seeing it in the chart.
 
 Root Cause: The reason you are not seeing the metrics in the chart is because the script that is calling the python client module is exiting right after calling the send method. The python client library is mainly targeted towards sending a continuous stream of metrics and was implemented to be asynchronous.
 
 Workaround:  Adding a sleep [eg: time.sleep(5)] for say 5 secs before exciting from your script or run your script from a python interpreter you should start seeing your metric in the chart. Or if you send a stream or metrics, you will see the metrics in the chart.?add
 
 
-2. SSLError when sending events by calling send_event() method
+#### SSLError when sending events by calling send_event() method
 
 ```python
 ERROR:root:Posting to SignalFx failed.
