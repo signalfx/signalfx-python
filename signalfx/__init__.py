@@ -51,7 +51,7 @@ class __BaseSignalFx(object):
 SignalFxLoggingStub = __BaseSignalFx
 
 
-class __SignalFxClient(__BaseSignalFx):
+class SignalFxClient(__BaseSignalFx):
     """SignalFx API client.
 
     This class presents a programmatic interface to SignalFx's metadata and
@@ -123,7 +123,7 @@ class __SignalFxClient(__BaseSignalFx):
             counters (list): a list of dictionaries representing the counters
                 to report.
         """
-        data = super(__SignalFxClient, self).send(
+        data = super(SignalFxClient, self).send(
             cumulative_counters=cumulative_counters, gauges=gauges,
             counters=counters)
         if not data:
@@ -145,7 +145,7 @@ class __SignalFxClient(__BaseSignalFx):
             dimensions (dict): a map of event dimensions.
             properties (dict): a map of extra properties on that event.
         """
-        data = super(__SignalFxClient, self).send_event(
+        data = super(SignalFxClient, self).send_event(
             event_type, dimensions=dimensions, properties=properties)
         if not data:
             return None
@@ -188,7 +188,7 @@ class __SignalFxClient(__BaseSignalFx):
             logging.exception('Posting to SignalFx failed.')
 
 
-class ProtoBufSignalFx(__SignalFxClient):
+class ProtoBufSignalFx(SignalFxClient):
     """SignalFx API client data handler that uses Protocol Buffers.
 
     This class presents the interfaces that handle the serialization of data
@@ -242,7 +242,7 @@ class ProtoBufSignalFx(__SignalFxClient):
         return dpum.SerializeToString()
 
 
-class JsonSignalFx(__SignalFxClient):
+class JsonSignalFx(SignalFxClient):
     """SignalFx API client data handler that uses Json.
 
     This class presents the interfaces that handle the serialization of data
