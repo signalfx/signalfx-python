@@ -7,10 +7,18 @@ to interact with SignalFx or report metric and event data to SignalFx.
 It is also the base for metric reporters that integrate with common
 Python-based metric collections tools or libraries.
 
+
 ## Installation
 
+To install from pip:
 ```
 pip install signalfx
+```
+To install from source:
+```
+git clone https://github.com/signalfx/signalfx-python.git
+cd signalfx-python
+python setup.py install
 ```
 
 ## Usage
@@ -88,3 +96,23 @@ gauge('test').set_value(42)
 ```
 
 See `examples/pyformance_usecase.py` for a complete code example using Pyformance.
+
+
+## Known Issues
+
+#### Sending only 1 datapoint and not seeing it in the chart.
+
+Root Cause: The reason you are not seeing the metrics in the chart is because the script that is calling the python client module is exiting right after calling the send method. The python client library is mainly targeted towards sending a continuous stream of metrics and was implemented to be asynchronous.
+
+Workaround:  Adding a sleep `eg: time.sleep(5)` for say 5 secs before exciting from your script or run your script from a python interpreter you should start seeing your metric in the chart. Or if you send a stream or metrics, you will see the metrics in the chart.
+
+
+#### SSLError when sending events by calling send_event() method
+
+```
+ERROR:root:Posting to SignalFx failed.
+SSLError: hostname 'api.signalfx.com' doesn't match either of '*.signalfuse.com', 'signalfuse.com'
+```
+Root Cause: SignalFx API endpoints server has SNI enabled and the urllib3 module in python versions prior to 2.7.8 had a bug that causes the above issue. This was fixed in later versions of python.
+
+Solution: Please upgrade to python version 2.7.9 or 2.7.10.

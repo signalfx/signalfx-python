@@ -6,7 +6,7 @@ import logging
 import pprint
 import Queue
 import requests
-from threading import Thread
+from threading import Thread, Lock
 
 import version
 _USE_PROTOCOL_BUFFERS = True
@@ -28,6 +28,16 @@ JSON_HEADER_CONTENT_TYPE = {'Content-Type': 'application/json'}
 
 
 class __BaseSignalFx(object):
+
+    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
+                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
+                 batch_size=DEFAULT_BATCH_SIZE, user_agents=[]):
+        self._api_token = api_token
+        self._ingest_endpoint = ingest_endpoint.rstrip('/')
+        self._api_endpoint = api_endpoint.rstrip('/')
+        self._timeout = timeout
+        self._batch_size = max(1, batch_size)
+        self._user_agents = user_agents
 
     def send(self, cumulative_counters=None, gauges=None, counters=None):
         if not gauges and not cumulative_counters and not counters:
@@ -64,28 +74,23 @@ class SignalFxClient(__BaseSignalFx):
     _API_ENDPOINT_SUFFIX = 'v1/event'
     _THREAD_NAME = 'SignalFxDatapointSendThread'
 
-    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
-                 batch_size=DEFAULT_BATCH_SIZE):
-        self._api_token = api_token
-        self._ingest_endpoint = ingest_endpoint.rstrip('/')
-        self._api_endpoint = api_endpoint.rstrip('/')
-        self._timeout = timeout
-        self._batch_size = max(1, batch_size)
-
+    def __init__(self, api_token, **kwargs):
+        super(SignalFxClient, self).__init__(api_token, **kwargs)
         self._ingest_session = self._prepare_ingest_session()
         self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
-        self._run_thread = True
-        self._send_thread = Thread(
-            target=self._send_thread, name=self._THREAD_NAME)
-        self._send_thread.daemon = True
-        self._send_thread.start()
+        self._thread_running = False
+        self._lock = Lock()
 
     def _add_user_agents(self, session):
+        # Adding user agent for the SignalFx Library Module
         session.headers[self._HEADER_USER_AGENT_KEY] +=\
             ' {name}/{version}'.format(
                 name=version.name, version=version.version)
+        # Adding custom user agents passed by client modules
+        if self._user_agents:
+            session.headers[self._HEADER_USER_AGENT_KEY] +=\
+                ' {}'.format(' '.join(self._user_agents))
 
     def _add_header_api_token(self, session):
         session.headers.update({self._HEADER_API_TOKEN_KEY: self._api_token})
@@ -135,6 +140,7 @@ class SignalFxClient(__BaseSignalFx):
                 raise TypeError('Datapoints not of type list %s', datapoints)
             for datapoint in datapoints:
                 self._add_to_queue(metric_type, datapoint)
+        self._start_thread()
 
     def send_event(self, event_type, dimensions=None, properties=None):
         """Send an event to SignalFx.
@@ -153,26 +159,39 @@ class SignalFxClient(__BaseSignalFx):
             self._api_endpoint, self._API_ENDPOINT_SUFFIX),
             session=self._api_session,)
 
-    def _send_thread(self):
+    def _start_thread(self):
+        # Locking the variable tha tracks the thread status
+        # 'self._thread_running' to make it an atomic operation.
+        _ = self._lock.acquire()
+        if self._thread_running:
+            self._lock.release()
+            return
+        self._thread_running = True
+        self._lock.release()
+        self._send_thread = Thread(target=self._send, name=self._THREAD_NAME)
+        self._send_thread.daemon = True
+        self._send_thread.start()
+        logging.debug('Thread %s started', self._THREAD_NAME)
+
+    def _stop_thread(self, msg='Thread Stopped'):
+        self._thread_running = False
+        self._send_thread.join()
+        logging.debug(msg)
+
+    def _send(self):
         try:
-            while self._run_thread:
-                datapoints_list = [self._queue.get()]
+            while self._thread_running:
+                datapoints_list = [self._queue.get(True)]
                 while (not self._queue.empty() and
                        len(datapoints_list) < self._batch_size):
                     datapoints_list.append(self._queue.get())
-                self._send(datapoints_list)
+                self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
+                    self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
         except KeyboardInterrupt:
-            self._run_thread = False
-            self._send_thread.join()
-            logging.debug('Thread stopped by keyboard interrupt.')
+            self._stop_thread(msg='Thread stopped by keyboard interrupt.')
 
     def _batch_data(self, datapoints_list):
         raise NotImplementedError('Subclasses should implement this!')
-
-    def _send(self, datapoint_list):
-        data = self._batch_data(datapoint_list)
-        self._post(data, '{0}/{1}'.format(
-            self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
 
     def _post(self, data, url, session=None):
         _session = session or self._ingest_session
@@ -195,11 +214,8 @@ class ProtoBufSignalFx(SignalFxClient):
     using Protocol Buffers
     """
 
-    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
-                 batch_size=DEFAULT_BATCH_SIZE):
-        super(ProtoBufSignalFx, self).__init__(
-            api_token, ingest_endpoint, api_endpoint, timeout, batch_size)
+    def __init__(self, api_token, **kwargs):
+        super(ProtoBufSignalFx, self).__init__(api_token, **kwargs)
 
     def _add_header_content_type(self, session):
         session.headers.update(PROTOBUF_HEADER_CONTENT_TYPE)
@@ -213,8 +229,8 @@ class ProtoBufSignalFx(SignalFxClient):
         if datapoint.get('metric_type'):
             pbuf_dp.metricType = getattr(
                 sf_pbuf, datapoint['metric_type'].upper())
-        if datapoint.get('dimensions'):
-            self._set_datapoint_dimensions(pbuf_dp, datapoint['dimensions'])
+        self._set_datapoint_dimensions(
+            pbuf_dp, datapoint.get('dimensions', {}))
         self._queue.put(pbuf_dp)
 
     def _set_datapoint_dimensions(self, pbuf_dp, dimensions):
@@ -249,11 +265,8 @@ class JsonSignalFx(SignalFxClient):
     using Json
     """
 
-    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
-                 batch_size=DEFAULT_BATCH_SIZE):
-        super(JsonSignalFx, self).__init__(
-            api_token, ingest_endpoint, api_endpoint, timeout, batch_size)
+    def __init__(self, api_token, **kwargs):
+        super(JsonSignalFx, self).__init__(api_token, **kwargs)
 
     def _add_header_content_type(self, session):
         session.headers.update(JSON_HEADER_CONTENT_TYPE)
