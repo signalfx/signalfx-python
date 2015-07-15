@@ -29,14 +29,6 @@ JSON_HEADER_CONTENT_TYPE = {'Content-Type': 'application/json'}
 
 class __BaseSignalFx(object):
 
-    def __init__(self, api_token, ingest_endpoint, api_endpoint, timeout,
-                 batch_size):
-        self._api_token = api_token
-        self._ingest_endpoint = ingest_endpoint.rstrip('/')
-        self._api_endpoint = api_endpoint.rstrip('/')
-        self._timeout = timeout
-        self._batch_size = max(1, batch_size)
-
     def send(self, cumulative_counters=None, gauges=None, counters=None):
         if not gauges and not cumulative_counters and not counters:
             return None
@@ -59,7 +51,7 @@ class __BaseSignalFx(object):
 SignalFxLoggingStub = __BaseSignalFx
 
 
-class SignalFxClient(__BaseSignalFx):
+class __SignalFxClient(__BaseSignalFx):
     """SignalFx API client.
 
     This class presents a programmatic interface to SignalFx's metadata and
@@ -72,10 +64,15 @@ class SignalFxClient(__BaseSignalFx):
     _API_ENDPOINT_SUFFIX = 'v1/event'
     _THREAD_NAME = 'SignalFxDatapointSendThread'
 
-    def __init__(self, api_token, ingest_endpoint, api_endpoint, timeout,
-                 batch_size):
-        super(SignalFxClient, self).__init__(
-            api_token, ingest_endpoint, api_endpoint, timeout, batch_size)
+    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
+                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
+                 batch_size=DEFAULT_BATCH_SIZE):
+        self._api_token = api_token
+        self._ingest_endpoint = ingest_endpoint.rstrip('/')
+        self._api_endpoint = api_endpoint.rstrip('/')
+        self._timeout = timeout
+        self._batch_size = max(1, batch_size)
+
         self._ingest_session = self._prepare_ingest_session()
         self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
@@ -126,7 +123,7 @@ class SignalFxClient(__BaseSignalFx):
             counters (list): a list of dictionaries representing the counters
                 to report.
         """
-        data = super(SignalFxClient, self).send(
+        data = super(__SignalFxClient, self).send(
             cumulative_counters=cumulative_counters, gauges=gauges,
             counters=counters)
         if not data:
@@ -148,7 +145,7 @@ class SignalFxClient(__BaseSignalFx):
             dimensions (dict): a map of event dimensions.
             properties (dict): a map of extra properties on that event.
         """
-        data = super(SignalFxClient, self).send_event(
+        data = super(__SignalFxClient, self).send_event(
             event_type, dimensions=dimensions, properties=properties)
         if not data:
             return None
@@ -191,7 +188,7 @@ class SignalFxClient(__BaseSignalFx):
             logging.exception('Posting to SignalFx failed.')
 
 
-class ProtoBufSignalFx(SignalFxClient):
+class ProtoBufSignalFx(__SignalFxClient):
     """SignalFx API client data handler that uses Protocol Buffers.
 
     This class presents the interfaces that handle the serialization of data
@@ -245,7 +242,7 @@ class ProtoBufSignalFx(SignalFxClient):
         return dpum.SerializeToString()
 
 
-class JsonSignalFx(SignalFxClient):
+class JsonSignalFx(__SignalFxClient):
     """SignalFx API client data handler that uses Json.
 
     This class presents the interfaces that handle the serialization of data
