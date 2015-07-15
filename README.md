@@ -102,19 +102,8 @@ Workaround:  Adding a sleep [eg: time.sleep(5)] for say 5 secs before exciting f
 
 #### SSLError when sending events by calling send_event() method
 
-```python
+```
 ERROR:root:Posting to SignalFx failed.
-Traceback (most recent call last):
-  File "/usr/local/lib/python2.7/dist-packages/signalfx/__init__.py", line 203, in _post
-    response = _session.post(url, data=data, timeout=self._timeout)
-  File "/usr/local/lib/python2.7/dist-packages/requests/sessions.py", line 508, in post
-    return self.request('POST', url, data=data, json=json, **kwargs)
-  File "/usr/local/lib/python2.7/dist-packages/requests/sessions.py", line 465, in request
-    resp = self.send(prep, **send_kwargs)
-  File "/usr/local/lib/python2.7/dist-packages/requests/sessions.py", line 573, in send
-    r = adapter.send(request, **kwargs)
-  File "/usr/local/lib/python2.7/dist-packages/requests/adapters.py", line 431, in send
-    raise SSLError(e, request=request)
 SSLError: hostname 'api.signalfx.com' doesn't match either of '*.signalfuse.com', 'signalfuse.com'
 ```
 
