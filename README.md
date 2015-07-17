@@ -45,6 +45,7 @@ sfx.send(
       {'metric': 'myfunc.calls', 'value': 42},
       ...
     ])
+sfx.stop()
 ```
 
 See `examples/generic_usecase.py` for a complete code example for Reporting data.
@@ -99,13 +100,6 @@ See `examples/pyformance_usecase.py` for a complete code example using Pyformanc
 
 
 ## Known Issues
-
-#### Sending only 1 datapoint and not seeing it in the chart.
-
-Root Cause: The reason you are not seeing the metrics in the chart is because the script that is calling the python client module is exiting right after calling the send method. The python client library is mainly targeted towards sending a continuous stream of metrics and was implemented to be asynchronous.
-
-Workaround:  Adding a sleep `eg: time.sleep(5)` for say 5 secs before exciting from your script or run your script from a python interpreter you should start seeing your metric in the chart. Or if you send a stream or metrics, you will see the metrics in the chart.
-
 
 #### SSLError when sending events by calling send_event() method
 

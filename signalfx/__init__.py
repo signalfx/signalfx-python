@@ -7,6 +7,7 @@ import pprint
 import Queue
 import requests
 from threading import Thread, Lock
+import time
 
 import version
 _USE_PROTOCOL_BUFFERS = True
@@ -17,27 +18,28 @@ except ImportError:
     _USE_PROTOCOL_BUFFERS = False
 
 # Default Parameters
-DEFAULT_INGEST_ENDPOINT = 'https://ingest.signalfx.com'
 DEFAULT_API_ENDPOINT = 'https://api.signalfx.com'
+DEFAULT_API_TIMEOUT_SEC = 1  # Timeout for the HTTP POST Calls
 DEFAULT_BATCH_SIZE = 300  # Will wait for this many requests before posting
-DEFAULT_TIMEOUT = 1
+DEFAULT_INGEST_ENDPOINT = 'https://ingest.signalfx.com'
 
 # Global Parameters
-PROTOBUF_HEADER_CONTENT_TYPE = {'Content-Type': 'application/x-protobuf'}
 JSON_HEADER_CONTENT_TYPE = {'Content-Type': 'application/json'}
+PROTOBUF_HEADER_CONTENT_TYPE = {'Content-Type': 'application/x-protobuf'}
 
 
 class __BaseSignalFx(object):
 
-    def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
-                 batch_size=DEFAULT_BATCH_SIZE, user_agents=[]):
+    def __init__(self, api_token, batch_size=DEFAULT_BATCH_SIZE,
+                 user_agents=[], timeout=DEFAULT_API_TIMEOUT_SEC,
+                 ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
+                 api_endpoint=DEFAULT_API_ENDPOINT):
         self._api_token = api_token
-        self._ingest_endpoint = ingest_endpoint.rstrip('/')
-        self._api_endpoint = api_endpoint.rstrip('/')
-        self._timeout = timeout
         self._batch_size = max(1, batch_size)
         self._user_agents = user_agents
+        self._timeout = timeout
+        self._ingest_endpoint = ingest_endpoint.rstrip('/')
+        self._api_endpoint = api_endpoint.rstrip('/')
 
     def send(self, cumulative_counters=None, gauges=None, counters=None):
         if not gauges and not cumulative_counters and not counters:
@@ -80,6 +82,7 @@ class SignalFxClient(__BaseSignalFx):
         self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
         self._thread_running = False
+        self._send_thread = None
         self._lock = Lock()
 
     def _add_user_agents(self, session):
@@ -159,6 +162,21 @@ class SignalFxClient(__BaseSignalFx):
             self._api_endpoint, self._API_ENDPOINT_SUFFIX),
             session=self._api_session,)
 
+    def stop(self, force=False):
+        """Sends all metrics in the pipeline to SignalFx
+        and stops all threads.
+
+        Args:
+            force (boolean): Defaults to False. Will exit without flushing
+            data if set to True.
+        """
+        logging.debug('Stop called with force=%s. Exiting %s sending '
+                      'pending metrics (if any) to SignalFx', force, 'Without'
+                      if force else 'After')
+        if self._send_thread is None or force:
+            return
+        self._stop_thread()
+
     def _start_thread(self):
         # Locking the variable tha tracks the thread status
         # 'self._thread_running' to make it an atomic operation.
@@ -173,22 +191,23 @@ class SignalFxClient(__BaseSignalFx):
         self._send_thread.start()
         logging.debug('Thread %s started', self._THREAD_NAME)
 
-    def _stop_thread(self, msg='Thread Stopped'):
+    def _stop_thread(self):
+        while not self._queue.empty():  # Polling for the Queue to be empty
+            time.sleep(1)
+        _ = self._lock.acquire()
         self._thread_running = False
+        self._lock.release()
         self._send_thread.join()
-        logging.debug(msg)
+        logging.debug('Thread %s stopped', self._THREAD_NAME)
 
     def _send(self):
-        try:
-            while self._thread_running:
-                datapoints_list = [self._queue.get(True)]
-                while (not self._queue.empty() and
-                       len(datapoints_list) < self._batch_size):
-                    datapoints_list.append(self._queue.get())
-                self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
-                    self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
-        except KeyboardInterrupt:
-            self._stop_thread(msg='Thread stopped by keyboard interrupt.')
+        while self._thread_running:
+            datapoints_list = [self._queue.get(True)]
+            while (not self._queue.empty() and
+                    len(datapoints_list) < self._batch_size):
+                datapoints_list.append(self._queue.get())
+            self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
+                self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
 
     def _batch_data(self, datapoints_list):
         raise NotImplementedError('Subclasses should implement this!')
