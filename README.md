@@ -46,6 +46,17 @@ sfx.send(
       ...
     ])
 ```
+Multi-Dimensional reproting data: 
+```python
+import signalfx
+
+sfx = signalfx.SignalFx('MY_TOKEN')
+sfx.send(
+    gauges=[
+        {'metric': 'myfunc.time', 'value': 532, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'},
+        ...
+        ])
+```
 
 See `examples/generic_usecase.py` for a complete code example for Reporting data.
 
