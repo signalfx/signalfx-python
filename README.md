@@ -44,18 +44,32 @@ sfx.send(
     counters=[
       {'metric': 'myfunc.calls', 'value': 42},
       ...
+    ],
+    cumulative_counters=[
+      {'metric': 'myfunc.calls_cumulative', 'value': 10},
+      ...
     ])
 ```
-Multi-Dimensional reproting data: 
+
+Reporting Dimensions for the data is optional and can be accomplished as follows:
+
 ```python
 import signalfx
 
 sfx = signalfx.SignalFx('MY_TOKEN')
 sfx.send(
     gauges=[
-        {'metric': 'myfunc.time', 'value': 532, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'},
-        ...
-        ])
+      {'metric': 'myfunc.time', 'value': 532, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
+      ...
+    ],
+    counters=[
+      {'metric': 'myfunc.calls', 'value': 42, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
+      ...
+    ],
+    cumulative_counters=[
+      {'metric': 'myfunc.calls_cumulative', 'value': 10, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
+      ...
+    ])
 ```
 
 See `examples/generic_usecase.py` for a complete code example for Reporting data.

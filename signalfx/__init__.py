@@ -223,12 +223,10 @@ class ProtoBufSignalFx(SignalFxClient):
     def _add_to_queue(self, metric_type, datapoint):
         pbuf_dp = sf_pbuf.DataPoint()
         self._assign_value_type(pbuf_dp, datapoint['value'])
+        pbuf_dp.metricType = getattr(sf_pbuf, metric_type.upper())
         pbuf_dp.metric = datapoint['metric']
         if datapoint.get('timestamp'):
             pbuf_dp.timestamp = int(datapoint['timestamp'])
-        if datapoint.get('metric_type'):
-            pbuf_dp.metricType = getattr(
-                sf_pbuf, datapoint['metric_type'].upper())
         self._set_datapoint_dimensions(
             pbuf_dp, datapoint.get('dimensions', {}))
         self._queue.put(pbuf_dp)
