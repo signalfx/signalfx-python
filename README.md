@@ -30,7 +30,7 @@ obtained from the SignalFx organization you want to report data into.
 
 ### Reporting data
 
-The "raw" usage of the library for reporting data goes as follows:
+Basic usage of the library for reporting data goes as follows:
 
 ```python
 import signalfx
@@ -38,20 +38,39 @@ import signalfx
 sfx = signalfx.SignalFx('MY_TOKEN')
 sfx.send(
     gauges=[
-      {'metric': 'myfunc.time', 'value': 532},
+      {'metric': 'myfunc.time',
+       'value': 532,
+       'timestamp': 1442960607000},
       ...
     ],
     counters=[
-      {'metric': 'myfunc.calls', 'value': 42},
+      {'metric': 'myfunc.calls',
+       'value': 42,
+       'timestamp': 1442960607000},
       ...
     ],
     cumulative_counters=[
-      {'metric': 'myfunc.calls_cumulative', 'value': 10},
+      {'metric': 'myfunc.calls_cumulative',
+       'value': 10,
+       'timestamp': 1442960607000},
       ...
     ])
 ```
 
-Reporting Dimensions for the data is optional and can be accomplished as follows:
+The `timestamp` must be a millisecond precision timestamp; the number of
+milliseconds elapsed since Epoch. The `timestamp` field is optional, but
+strongly recommended. If not specified, it will be set by SignalFx's
+ingest servers automatically; in this situation, the timestamp of your
+datapoints will not accurately represent the time of their measurement
+(network latency, batching, etc. will all impact when those datapoints
+actually make it to SignalFx).
+
+#### Sending multi-dimensional data
+
+Reporting dimensions for the data is also optional, and can be
+accomplished by specifying a `dimensions` parameter on each datapoint
+containing a dictionary of string to string key/value pairs representing
+the dimensions:
 
 ```python
 import signalfx
@@ -59,20 +78,18 @@ import signalfx
 sfx = signalfx.SignalFx('MY_TOKEN')
 sfx.send(
     gauges=[
-      {'metric': 'myfunc.time', 'value': 532, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
+      {
+        'metric': 'myfunc.time',
+        'value': 532,
+        'timestamp': 1442960607000,
+        'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
+      },
       ...
-    ],
-    counters=[
-      {'metric': 'myfunc.calls', 'value': 42, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
-      ...
-    ],
-    cumulative_counters=[
-      {'metric': 'myfunc.calls_cumulative', 'value': 10, 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}},
-      ...
-    ])
+    ], ...)
 ```
 
-See `examples/generic_usecase.py` for a complete code example for Reporting data.
+See [`examples/generic_usecase.py`](examples/generic_usecase.py) for a
+complete code sample showing how to send data to SignalFx.
 
 ### Sending events
 
@@ -127,10 +144,23 @@ See `examples/pyformance_usecase.py` for a complete code example using Pyformanc
 
 #### Sending only 1 datapoint and not seeing it in the chart.
 
-Root Cause: The reason you are not seeing the metrics in the chart is because the script that is calling the python client module is exiting right after calling the send method. The python client library is mainly targeted towards sending a continuous stream of metrics and was implemented to be asynchronous.
+The reason you are not seeing the metrics in the chart is because the
+script that is calling the Python client module is exiting right after
+calling the send method. The Python client library is mainly targeted
+towards sending a continuous stream of metrics and was implemented to be
+asynchronous.
 
-Workaround:  Adding a sleep `eg: time.sleep(5)` for say 5 secs before exciting from your script or run your script from a python interpreter you should start seeing your metric in the chart. Or if you send a stream or metrics, you will see the metrics in the chart.
+To work around this problem (most common in short-lived scripts for
+example), register an `atexit` function to cleaning stop the datapoint
+sending thread when your program exits:
 
+```python
+import atexit
+import signalfx
+
+sfx = signalfx.SignalFx('MY_TOKEN')
+atexit.register(sfx.stop)
+```
 
 #### SSLError when sending events by calling send_event() method
 
@@ -138,6 +168,8 @@ Workaround:  Adding a sleep `eg: time.sleep(5)` for say 5 secs before exciting f
 ERROR:root:Posting to SignalFx failed.
 SSLError: hostname 'api.signalfx.com' doesn't match either of '*.signalfuse.com', 'signalfuse.com'
 ```
-Root Cause: SignalFx API endpoints server has SNI enabled and the urllib3 module in python versions prior to 2.7.8 had a bug that causes the above issue. This was fixed in later versions of python.
 
-Solution: Please upgrade to python version 2.7.9 or 2.7.10.
+Root Cause: SignalFx's API endpoints have SSL SNI enabled and the
+`urllib3` module in Python versions prior to 2.7.8 had a bug that causes
+the above issue. This was fixed in later versions of Python; we
+recommend using Python 2.7.9 or newer when using this library.

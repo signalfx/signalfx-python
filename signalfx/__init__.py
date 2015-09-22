@@ -1,3 +1,29 @@
+"""SignalFx client library.
+
+This module makes interacting with SignalFx from your Python scripts and
+applications easy by providing a full-featured client for SignalFx's APIs.
+
+Basic usage:
+
+    import signalfx
+
+    sfx = signalfx.SignalFx('your_api_token')
+    sfx.send(
+        gauges=[
+          {
+            'metric': 'myfunc.time',
+            'value': 532,
+            'timestamp': 1442960607000,
+            'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
+          },
+        ])
+
+    import atexit
+    atexit.register(sfx.stop)
+
+Read the documentation at https://github.com/signalfx/signalfx-python for more
+in-depth examples."""
+
 # Copyright (C) 2015 SignalFx, Inc. All rights reserved.
 
 import collections
@@ -6,7 +32,7 @@ import logging
 import pprint
 import Queue
 import requests
-from threading import Thread, Lock
+import threading
 
 import version
 _USE_PROTOCOL_BUFFERS = True
@@ -15,6 +41,10 @@ try:
 except ImportError:
     logging.warn('Protocol Buffers not installed properly. Switching to Json.')
     _USE_PROTOCOL_BUFFERS = False
+
+__author__ = 'SignalFx, Inc'
+__email__ = 'support+python@signalfx.com'
+__copyright__ = 'Copyright (C) 2015 SignalFx, Inc. All rights reserved.'
 
 # Default Parameters
 DEFAULT_INGEST_ENDPOINT = 'https://ingest.signalfx.com'
@@ -61,7 +91,7 @@ class __BaseSignalFx(object):
 SignalFxLoggingStub = __BaseSignalFx
 
 
-class SignalFxClient(__BaseSignalFx):
+class __SignalFxClient(__BaseSignalFx):
     """SignalFx API client.
 
     This class presents a programmatic interface to SignalFx's metadata and
@@ -75,12 +105,12 @@ class SignalFxClient(__BaseSignalFx):
     _THREAD_NAME = 'SignalFxDatapointSendThread'
 
     def __init__(self, api_token, **kwargs):
-        super(SignalFxClient, self).__init__(api_token, **kwargs)
+        super(__SignalFxClient, self).__init__(api_token, **kwargs)
         self._ingest_session = self._prepare_ingest_session()
         self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
         self._thread_running = False
-        self._lock = Lock()
+        self._lock = threading.Lock()
 
     def _add_user_agents(self, session):
         # Adding user agent for the SignalFx Library Module
@@ -128,7 +158,7 @@ class SignalFxClient(__BaseSignalFx):
             counters (list): a list of dictionaries representing the counters
                 to report.
         """
-        data = super(SignalFxClient, self).send(
+        data = super(__SignalFxClient, self).send(
             cumulative_counters=cumulative_counters, gauges=gauges,
             counters=counters)
         if not data:
@@ -151,7 +181,7 @@ class SignalFxClient(__BaseSignalFx):
             dimensions (dict): a map of event dimensions.
             properties (dict): a map of extra properties on that event.
         """
-        data = super(SignalFxClient, self).send_event(
+        data = super(__SignalFxClient, self).send_event(
             event_type, dimensions=dimensions, properties=properties)
         if not data:
             return None
@@ -162,18 +192,19 @@ class SignalFxClient(__BaseSignalFx):
     def _start_thread(self):
         # Locking the variable tha tracks the thread status
         # 'self._thread_running' to make it an atomic operation.
-        _ = self._lock.acquire()
-        if self._thread_running:
-            self._lock.release()
-            return
-        self._thread_running = True
-        self._lock.release()
-        self._send_thread = Thread(target=self._send, name=self._THREAD_NAME)
+        with self._lock:
+            if self._thread_running:
+                return
+            self._thread_running = True
+
+        self._send_thread = threading.Thread(target=self._send,
+                                             name=self._THREAD_NAME)
         self._send_thread.daemon = True
         self._send_thread.start()
         logging.debug('Thread %s started', self._THREAD_NAME)
 
-    def _stop_thread(self, msg='Thread Stopped'):
+    def stop(self, msg='Thread stopped'):
+        """Stop send thread and flush points for a safe exit."""
         self._thread_running = False
         self._send_thread.join()
         logging.debug(msg)
@@ -188,7 +219,7 @@ class SignalFxClient(__BaseSignalFx):
                 self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
                     self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
         except KeyboardInterrupt:
-            self._stop_thread(msg='Thread stopped by keyboard interrupt.')
+            self.stop(msg='Thread stopped by keyboard interrupt.')
 
     def _batch_data(self, datapoints_list):
         raise NotImplementedError('Subclasses should implement this!')
@@ -207,11 +238,12 @@ class SignalFxClient(__BaseSignalFx):
             logging.exception('Posting to SignalFx failed.')
 
 
-class ProtoBufSignalFx(SignalFxClient):
+class ProtoBufSignalFx(__SignalFxClient):
     """SignalFx API client data handler that uses Protocol Buffers.
 
     This class presents the interfaces that handle the serialization of data
-    using Protocol Buffers
+    using Protocol Buffers. Use the SignalFx class directly if you're not sure
+    what's best for you here.
     """
 
     def __init__(self, api_token, **kwargs):
@@ -256,11 +288,12 @@ class ProtoBufSignalFx(SignalFxClient):
         return dpum.SerializeToString()
 
 
-class JsonSignalFx(SignalFxClient):
+class JsonSignalFx(__SignalFxClient):
     """SignalFx API client data handler that uses Json.
 
     This class presents the interfaces that handle the serialization of data
-    using Json
+    using Json. Use the SignalFx class directly if you're not sure what's best
+    for you here.
     """
 
     def __init__(self, api_token, **kwargs):
