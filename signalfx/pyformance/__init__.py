@@ -72,6 +72,6 @@ class SignalFxReporter(reporter.Reporter):
         if not r:
             try:
                 error = r.json()['message']
-            except:
+            except Exception:
                 error = '{} {}'.format(r.status_code, r.text)
             logging.error('Error sending metrics to SignalFx: %s', error)
