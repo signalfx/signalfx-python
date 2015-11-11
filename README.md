@@ -111,7 +111,31 @@ sfx.send_event(
         'version': '2015.04.29-01'})
 ```
 
-See `examples/generic_usecase.py` for a complete code example Sending events.
+See `examples/generic_usecase.py` for a complete code example.
+
+### AWS integration
+
+Optionally, the client may be configured to append additional dimensions to
+all metrics and events sent to SignalFx. One use case for this is to append
+the AWS unique ID of the current host as an extra dimension.
+For example,
+
+```python
+import signalfx
+from signalfx.aws import AWS_ID_DIMENSION, get_aws_unique_id
+
+sfx = signalfx.SignalFx('your_api_token')
+sfx.add_dimensions({AWS_ID_DIMENSION: get_aws_unique_id()})
+sfx.send(
+    gauges=[
+      {
+        'metric': 'myfunc.time',
+        'value': 532,
+        'timestamp': 1442960607000
+        'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
+      },
+    ])
+```
 
 ### Pyformance reporter
 

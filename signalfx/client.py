@@ -15,7 +15,7 @@ from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_API_ENDPOINT, \
 
 try:
     import generated_protocol_buffers.signal_fx_protocol_buffers_pb2 as sf_pbuf
-except:
+except ImportError:
     sf_pbuf = None
 
 
@@ -23,12 +23,14 @@ class BaseSignalFx(object):
 
     def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
                  api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
-                 batch_size=DEFAULT_BATCH_SIZE, user_agents=[]):
+                 batch_size=DEFAULT_BATCH_SIZE, user_agents=None):
         self._api_token = api_token
         self._ingest_endpoint = ingest_endpoint.rstrip('/')
         self._api_endpoint = api_endpoint.rstrip('/')
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
+        if user_agents is None:
+            user_agents = []
         self._user_agents = user_agents
 
     def send(self, cumulative_counters=None, gauges=None, counters=None):
@@ -70,6 +72,7 @@ class SignalFxClient(BaseSignalFx):
         self._queue = Queue.Queue()
         self._thread_running = False
         self._lock = threading.Lock()
+        self._extra_dimensions = {}
 
     def _add_user_agents(self, session):
         # Adding user agent for the SignalFx Library Module
@@ -106,6 +109,37 @@ class SignalFxClient(BaseSignalFx):
     def _add_to_queue(self, metric_type, datapoint):
         raise NotImplementedError('Subclasses should implement this!')
 
+    def _add_extra_dimensions(self, datapoint):
+        with self._lock:
+            if not self._extra_dimensions:
+                return
+            if datapoint.get('dimensions') is not None:
+                datapoint['dimensions'].update(self._extra_dimensions)
+            else:
+                datapoint['dimensions'] = self._extra_dimensions
+
+    def add_dimensions(self, dimensions):
+        """Add one or more dimensions that will be included with every
+        datapoint and event sent to SignalFx.
+
+        Args:
+            dimensions (dict): A mapping of {dimension: value, ...} pairs.
+        """
+        with self._lock:
+            self._extra_dimensions.update(dimensions)
+
+    def remove_dimensions(self, dimension_names):
+        """Removes extra dimensions added by the add_dimensions() function.
+        Ignores dimension names that don't exist.
+
+        Args:
+            dimension_names (list): List of dimension names to remove.
+        """
+        with self._lock:
+            for dimension in dimension_names:
+                if dimension in self._extra_dimensions:
+                    del self._extra_dimensions[dimension]
+
     def send(self, cumulative_counters=None, gauges=None, counters=None):
         """Send the given metrics to SignalFx.
 
@@ -128,6 +162,7 @@ class SignalFxClient(BaseSignalFx):
             if not isinstance(datapoints, list):
                 raise TypeError('Datapoints not of type list %s', datapoints)
             for datapoint in datapoints:
+                self._add_extra_dimensions(datapoint)
                 self._add_to_queue(metric_type, datapoint)
         self._start_thread()
 
@@ -144,12 +179,13 @@ class SignalFxClient(BaseSignalFx):
             event_type, dimensions=dimensions, properties=properties)
         if not data:
             return None
+        self._add_extra_dimensions(data)
         return self._post(json.dumps(data), '{0}/{1}'.format(
             self._api_endpoint, self._API_ENDPOINT_SUFFIX),
             session=self._api_session,)
 
     def _start_thread(self):
-        # Locking the variable tha tracks the thread status
+        # Locking the variable that tracks the thread status
         # 'self._thread_running' to make it an atomic operation.
         with self._lock:
             if self._thread_running:
