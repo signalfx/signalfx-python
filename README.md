@@ -55,6 +55,9 @@ sfx.send(
        'timestamp': 1442960607000},
       ...
     ])
+# After all datapoints have been sent, flush any remaining messages
+# in the send queue and terminate all connections
+sfx.stop()
 ```
 
 The `timestamp` must be a millisecond precision timestamp; the number of
@@ -64,6 +67,15 @@ ingest servers automatically; in this situation, the timestamp of your
 datapoints will not accurately represent the time of their measurement
 (network latency, batching, etc. will all impact when those datapoints
 actually make it to SignalFx).
+
+When sending datapoints with multiple calls to `send()`, it is recommended
+to re-use the same SignalFx client object for each `send()` call.
+
+If you must use multiple client objects for the same token, which is not
+recommended, it is important to call `stop()` after making all `send()`
+calls. Each SignalFx client object uses a background thread to send
+datapoints without blocking the caller. Calling `stop()` will gracefully
+flush the thread's send queue and close its TCP connections.
 
 #### Sending multi-dimensional data
 
@@ -86,6 +98,7 @@ sfx.send(
       },
       ...
     ], ...)
+sfx.stop()
 ```
 
 See [`examples/generic_usecase.py`](examples/generic_usecase.py) for a
@@ -135,6 +148,7 @@ sfx.send(
         'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
       },
     ])
+sfx.stop()
 ```
 
 ### Pyformance reporter
