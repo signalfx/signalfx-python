@@ -9,9 +9,9 @@ import requests
 import threading
 
 import version
-from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_API_ENDPOINT, \
-                      DEFAULT_TIMEOUT, DEFAULT_BATCH_SIZE, \
-                      JSON_HEADER_CONTENT_TYPE, PROTOBUF_HEADER_CONTENT_TYPE
+from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
+    DEFAULT_BATCH_SIZE, JSON_HEADER_CONTENT_TYPE, \
+    PROTOBUF_HEADER_CONTENT_TYPE, SUPPORTED_EVENT_CATEGORIES
 
 try:
     import generated_protocol_buffers.signal_fx_protocol_buffers_pb2 as sf_pbuf
@@ -22,11 +22,10 @@ except ImportError:
 class BaseSignalFx(object):
 
     def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
+                 api_endpoint=None, timeout=DEFAULT_TIMEOUT,
                  batch_size=DEFAULT_BATCH_SIZE, user_agents=None):
         self._api_token = api_token
         self._ingest_endpoint = ingest_endpoint.rstrip('/')
-        self._api_endpoint = api_endpoint.rstrip('/')
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
         if user_agents is None:
@@ -44,10 +43,21 @@ class BaseSignalFx(object):
         logging.debug('Sending datapoints to SignalFx: %s', data)
         return data
 
-    def send_event(self, event_type, dimensions=None, properties=None):
-        data = {'eventType': event_type,
-                'dimensions': dimensions or {},
-                'properties': properties or {}}
+    def send_event(self, event_type, category=None, dimensions=None,
+                   properties=None, timestamp=None):
+        if timestamp:
+            timestamp = int(timestamp)
+        if category and category not in SUPPORTED_EVENT_CATEGORIES:
+            raise ValueError('Event category is not one of the supported' +
+                             'types: {' +
+                             ', '.join(SUPPORTED_EVENT_CATEGORIES) + '}')
+        data = {
+            'category': category,
+            'eventType': event_type,
+            'dimensions': dimensions or {},
+            'properties': properties or {},
+            'timestamp': timestamp,
+        }
         logging.debug('Sending event to SignalFx: %s', data)
         return data
 
@@ -61,18 +71,21 @@ class SignalFxClient(BaseSignalFx):
     """
     _HEADER_API_TOKEN_KEY = 'X-SF-Token'
     _HEADER_USER_AGENT_KEY = 'User-Agent'
-    _INGEST_ENDPOINT_SUFFIX = 'v2/datapoint'
-    _API_ENDPOINT_SUFFIX = 'v1/event'
+    _INGEST_ENDPOINT_DATAPOINT_SUFFIX = 'v2/datapoint'
+    _INGEST_ENDPOINT_EVENT_SUFFIX = 'v2/event'
     _THREAD_NAME = 'SignalFxDatapointSendThread'
 
     def __init__(self, api_token, **kwargs):
         super(SignalFxClient, self).__init__(api_token, **kwargs)
         self._ingest_session = self._prepare_ingest_session()
-        self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
+        self.queue_stop_signal = SignalFxClient.QueueStopSignal()
         self._thread_running = False
         self._lock = threading.Lock()
         self._extra_dimensions = {}
+
+    class QueueStopSignal(object):
+        pass
 
     def _add_user_agents(self, session):
         # Adding user agent for the SignalFx Library Module
@@ -99,11 +112,6 @@ class SignalFxClient(BaseSignalFx):
     def _prepare_ingest_session(self):
         session = self._prepare_base_session()
         self._add_header_content_type(session)
-        return session
-
-    def _prepare_api_session(self):
-        session = self._prepare_base_session()
-        session.headers.update(JSON_HEADER_CONTENT_TYPE)
         return session
 
     def _add_to_queue(self, metric_type, datapoint):
@@ -166,23 +174,30 @@ class SignalFxClient(BaseSignalFx):
                 self._add_to_queue(metric_type, datapoint)
         self._start_thread()
 
-    def send_event(self, event_type, dimensions=None, properties=None):
+    def send_event(self, event_type, category=None, dimensions=None,
+                   properties=None, timestamp=None):
         """Send an event to SignalFx.
 
         Args:
             event_type (string): the event type (name of the event time
                 series).
+            category (string): the category of the event.
             dimensions (dict): a map of event dimensions.
             properties (dict): a map of extra properties on that event.
+            timestamp (float): timestamp when the event has occured
         """
         data = super(SignalFxClient, self).send_event(
-            event_type, dimensions=dimensions, properties=properties)
+            event_type, category=category, dimensions=dimensions,
+            properties=properties, timestamp=timestamp)
         if not data:
             return None
         self._add_extra_dimensions(data)
-        return self._post(json.dumps(data), '{0}/{1}'.format(
-            self._api_endpoint, self._API_ENDPOINT_SUFFIX),
-            session=self._api_session,)
+        return self._send_event(event_data=data, url='{0}/{1}'.format(
+            self._ingest_endpoint, self._INGEST_ENDPOINT_EVENT_SUFFIX),
+            session=self._ingest_session)
+
+    def _send_event(self, event_data=None, url=None, session=None):
+        raise NotImplementedError('Subclasses should implement this!')
 
     def _start_thread(self):
         # Locking the variable that tracks the thread status
@@ -201,18 +216,25 @@ class SignalFxClient(BaseSignalFx):
     def stop(self, msg='Thread stopped'):
         """Stop send thread and flush points for a safe exit."""
         self._thread_running = False
+        self._queue.put(self.queue_stop_signal)
         self._send_thread.join()
         logging.debug(msg)
 
     def _send(self):
         try:
             while self._thread_running:
-                datapoints_list = [self._queue.get(True)]
+                tmp_dp = self._queue.get(True)
+                if tmp_dp == self.queue_stop_signal:
+                    break
+                datapoints_list = [tmp_dp]
                 while (not self._queue.empty() and
                        len(datapoints_list) < self._batch_size):
-                    datapoints_list.append(self._queue.get())
+                    tmp_dp = self._queue.get()
+                    if tmp_dp != self.queue_stop_signal:
+                        datapoints_list.append(self._queue.get())
                 self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
-                    self._ingest_endpoint, self._INGEST_ENDPOINT_SUFFIX))
+                    self._ingest_endpoint,
+                    self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
         except KeyboardInterrupt:
             self.stop(msg='Thread stopped by keyboard interrupt.')
 
@@ -256,18 +278,39 @@ class ProtoBufSignalFx(SignalFxClient):
         pbuf_dp.metric = datapoint['metric']
         if datapoint.get('timestamp'):
             pbuf_dp.timestamp = int(datapoint['timestamp'])
-        self._set_datapoint_dimensions(
+        self._set_dimensions(
             pbuf_dp, datapoint.get('dimensions', {}))
         self._queue.put(pbuf_dp)
 
-    def _set_datapoint_dimensions(self, pbuf_dp, dimensions):
+    def _set_dimensions(self, pbuf_obj, dimensions):
         if not isinstance(dimensions, dict):
             raise ValueError('Invalid dimensions {0}; must be a dict!'
                              .format(dimensions))
         for key, value in dimensions.items():
-            dim = pbuf_dp.dimensions.add()
+            dim = pbuf_obj.dimensions.add()
             dim.key = key
             dim.value = value
+
+    def _set_event_properties(self, pbuf_obj, properties):
+        if not isinstance(properties, dict):
+            raise ValueError('Invalid dimensions {0}; must be a dict!'
+                             .format(properties))
+        for key, value in properties.items():
+            prop = pbuf_obj.properties.add()
+            prop.key = key
+            self._assign_property_value(prop, value)
+
+    def _assign_property_value(self, prop, value):
+        if isinstance(value, int):
+            prop.value.intValue = value
+        elif isinstance(value, str):
+            prop.value.strValue = value
+        elif isinstance(value, float):
+            prop.value.doubleValue = value
+        elif isinstance(value, bool):
+            prop.value.boolValue = value
+        else:
+            raise ValueError('Invalid Value ' + str(value))
 
     def _assign_value_type(self, pbuf_dp, value):
         if isinstance(value, int):
@@ -283,6 +326,26 @@ class ProtoBufSignalFx(SignalFxClient):
         dpum = sf_pbuf.DataPointUploadMessage()
         dpum.datapoints.extend(datapoints_list)
         return dpum.SerializeToString()
+
+    def _send_event(self, event_data=None, url=None, session=None):
+        pbuf_event = self._create_event_protobuf_message(event_data)
+        pbuf_eventum = sf_pbuf.EventUploadMessage()
+        pbuf_eventum.events.extend([pbuf_event])
+        return self._post(pbuf_eventum.SerializeToString(), url, session)
+
+    def _create_event_protobuf_message(self, event_data=None):
+        pbuf_event = sf_pbuf.Event()
+        pbuf_event.eventType = event_data['eventType']
+        self._set_dimensions(
+            pbuf_event, event_data.get('dimensions', {}))
+        self._set_event_properties(
+            pbuf_event, event_data.get('properties', {}))
+        if event_data.get('category'):
+            pbuf_event.category = getattr(sf_pbuf,
+                                          event_data['category'].upper())
+        if event_data.get('timestamp'):
+            pbuf_event.timestamp = event_data['timestamp']
+        return pbuf_event
 
 
 class JsonSignalFx(SignalFxClient):
@@ -307,3 +370,6 @@ class JsonSignalFx(SignalFxClient):
         for item in datapoints_list:
             datapoints[item.keys()[0]].append(item[item.keys()[0]])
         return json.dumps(datapoints)
+
+    def _send_event(self, event_data=None, url=None, session=None):
+        return self._post(json.dumps([event_data]), url, session)

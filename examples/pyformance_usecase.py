@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
-import os
-import sys
-sys.path.append(os.path.realpath('..'))
-
 import argparse
 import logging
+import os
+sys.path.append(os.path.realpath('..')) # flake8: noqa
+
 import pyformance as pyf
 import signalfx.pyformance
+import sys
 import time
+
 
 
 if __name__ == '__main__':

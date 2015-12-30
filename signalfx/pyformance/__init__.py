@@ -21,8 +21,8 @@ class SignalFxReporter(reporter.Reporter):
     def __init__(
             self, api_token, ingest_endpoint=signalfx.DEFAULT_INGEST_ENDPOINT,
             registry=None, reporting_interval=1, default_dimensions=None):
-        if (default_dimensions is not None
-                and not isinstance(default_dimensions, dict)):
+        if default_dimensions is not None and not isinstance(
+                default_dimensions, dict):
             raise TypeError('The default_dimensions argument must be a '
                             'dict of string keys to string values.')
 
@@ -41,7 +41,7 @@ class SignalFxReporter(reporter.Reporter):
         metrics = registry.dump_metrics()
 
         timestamp = timestamp or int(self.clock.time())
-        sf_timestamp = timestamp * 10**3
+        sf_timestamp = timestamp * 10 ** 3
 
         cumulative_counters = []
         gauges = []
