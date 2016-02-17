@@ -1,4 +1,5 @@
-"""SignalFx client library.
+"""
+SignalFx client library.
 
 This module makes interacting with SignalFx from your Python scripts and
 applications easy by providing a full-featured client for SignalFx's APIs.
@@ -22,14 +23,15 @@ Basic usage:
     atexit.register(sfx.stop)
 
 Read the documentation at https://github.com/signalfx/signalfx-python for more
-in-depth examples."""
+in depth examples.
+"""
 
 # Copyright (C) 2015 SignalFx, Inc. All rights reserved.
 
 import logging
 
 import client
-from constants import * # flake8: noqa
+from constants import *  # flake8: noqa
 
 
 __author__ = 'SignalFx, Inc'

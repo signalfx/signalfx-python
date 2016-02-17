@@ -3,3 +3,6 @@
 *.pyc
 .ropeproject/
 *.egg-info/
+.idea/
+build/
+dist/

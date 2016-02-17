@@ -9,3 +9,6 @@ DEFAULT_TIMEOUT = 1
 # Global Parameters
 PROTOBUF_HEADER_CONTENT_TYPE = {'Content-Type': 'application/x-protobuf'}
 JSON_HEADER_CONTENT_TYPE = {'Content-Type': 'application/json'}
+SUPPORTED_EVENT_CATEGORIES = ["USER_DEFINED", "ALERT",
+                              "AUDIT", "JOB", "COLLECTD", "SERVICE_DISCOVERY",
+                              "EXCEPTION"]
