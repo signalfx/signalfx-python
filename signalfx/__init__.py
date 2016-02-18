@@ -29,7 +29,7 @@ in-depth examples."""
 import logging
 
 import client
-from constants import * # flake8: noqa
+from constants import *  # flake8: noqa
 
 
 __author__ = 'SignalFx, Inc'
