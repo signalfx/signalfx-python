@@ -9,8 +9,8 @@ import requests
 import threading
 
 import version
-from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
-    DEFAULT_BATCH_SIZE, JSON_HEADER_CONTENT_TYPE, \
+from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_API_ENDPOINT,\
+    DEFAULT_TIMEOUT, DEFAULT_BATCH_SIZE, JSON_HEADER_CONTENT_TYPE, \
     PROTOBUF_HEADER_CONTENT_TYPE, SUPPORTED_EVENT_CATEGORIES
 
 try:
@@ -22,10 +22,11 @@ except ImportError:
 class BaseSignalFx(object):
 
     def __init__(self, api_token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
-                 api_endpoint=None, timeout=DEFAULT_TIMEOUT,
+                 api_endpoint=DEFAULT_API_ENDPOINT, timeout=DEFAULT_TIMEOUT,
                  batch_size=DEFAULT_BATCH_SIZE, user_agents=None):
         self._api_token = api_token
         self._ingest_endpoint = ingest_endpoint.rstrip('/')
+        self._api_endpoint = api_endpoint.rstrip('/')
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
         if user_agents is None:
@@ -61,23 +62,47 @@ class BaseSignalFx(object):
         logging.debug('Sending event to SignalFx: %s', data)
         return data
 
+    @staticmethod
+    def update_metric(metric_type, description=None,
+                      custom_properties=None, tags=None):
+        data = {'type': metric_type.upper(),
+                'description': description or '',
+                'customProperties': custom_properties or {},
+                'tags': tags or []}
+        logging.debug('Sending metric metadata to SignalFx: %s', data)
+        return data
+
+    @staticmethod
+    def update_tag(description=None, custom_properties=None):
+        data = {'description': description or '',
+                'customProperties': custom_properties or {}}
+        logging.debug('Sending tag data to SignalFx: %s', data)
+        return data
+
 
 class SignalFxClient(BaseSignalFx):
     """SignalFx API client.
 
     This class presents a programmatic interface to SignalFx's metadata and
-    ingest APIs. At the time being, only ingest is supported; more will come
-    later.
+    ingest APIs. At the moment, ingest of datapoints and events
+    and functionality related to metadata and tags are supported.
+    More will come later.
     """
     _HEADER_API_TOKEN_KEY = 'X-SF-Token'
     _HEADER_USER_AGENT_KEY = 'User-Agent'
     _INGEST_ENDPOINT_DATAPOINT_SUFFIX = 'v2/datapoint'
     _INGEST_ENDPOINT_EVENT_SUFFIX = 'v2/event'
     _THREAD_NAME = 'SignalFxDatapointSendThread'
+    _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
+    _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
+    _MTS_ENDPOINT_SUFFIX = 'v2/metrictimeseries'
+    _TAG_ENDPOINT_SUFFIX = 'v2/tag'
+    _ORGANIZATION_ENDPOINT_SUFFIX = 'v2/organization'
 
     def __init__(self, api_token, **kwargs):
         super(SignalFxClient, self).__init__(api_token, **kwargs)
         self._ingest_session = self._prepare_ingest_session()
+        self._api_session = self._prepare_api_session()
         self._queue = Queue.Queue()
         self.queue_stop_signal = SignalFxClient.QueueStopSignal()
         self._thread_running = False
@@ -96,6 +121,11 @@ class SignalFxClient(BaseSignalFx):
         if self._user_agents:
             session.headers[self._HEADER_USER_AGENT_KEY] +=\
                 ' {}'.format(' '.join(self._user_agents))
+
+    def _prepare_api_session(self):
+        session = self._prepare_base_session()
+        session.headers.update(JSON_HEADER_CONTENT_TYPE)
+        return session
 
     def _add_header_api_token(self, session):
         session.headers.update({self._HEADER_API_TOKEN_KEY: self._api_token})
@@ -232,27 +262,329 @@ class SignalFxClient(BaseSignalFx):
                     tmp_dp = self._queue.get()
                     if tmp_dp != self.queue_stop_signal:
                         datapoints_list.append(self._queue.get())
-                self._post(self._batch_data(datapoints_list), '{0}/{1}'.format(
-                    self._ingest_endpoint,
-                    self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
+                try:
+                    self._post(self._batch_data(datapoints_list),
+                               '{0}/{1}'.format(
+                                   self._ingest_endpoint,
+                                   self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
+                except:
+                    logging.exception('Posting data to SignalFx failed.')
         except KeyboardInterrupt:
             self.stop(msg='Thread stopped by keyboard interrupt.')
 
     def _batch_data(self, datapoints_list):
         raise NotImplementedError('Subclasses should implement this!')
 
-    def _post(self, data, url, session=None):
+    def _post(self, data, url, session=None, timeout=None):
+        _timeout = timeout or self._timeout
         _session = session or self._ingest_session
-        if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logging.debug(
-                'Raw datastream being sent: %s', pprint.pformat(data))
-        try:
-            response = _session.post(url, data=data, timeout=self._timeout)
-            logging.debug('Sending to SignalFx %s (%d %s)',
-                          'succeeded' if response.ok else 'failed',
-                          response.status_code, response.text)
-        except Exception:
-            logging.exception('Posting to SignalFx failed.')
+        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        response = _session.post(url, data=data, timeout=_timeout)
+        logging.debug('Sending to SignalFx %s (%d %s)',
+                      'succeeded' if response.ok else 'failed',
+                      response.status_code, response.text)
+
+    def _get(self, url, session=None, timeout=None):
+        _timeout = timeout or self._timeout
+        _session = session or self._api_session
+        logging.debug('url being gotten: %s', pprint.pformat(url))
+        response = _session.get(url, timeout=_timeout)
+        logging.debug('Getting from SignalFx %s (%d %s)',
+                      'succeeded' if response.ok else 'failed',
+                      response.status_code, response.text)
+        return response
+
+    def _put(self, url, data, session=None, timeout=None):
+        _timeout = timeout or self._timeout
+        _session = session or self._api_session
+        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        response = _session.put(url, data=data, timeout=_timeout)
+        logging.debug('Putting to SignalFx %s (%d %s)',
+                      'succeeded' if response.ok else 'failed',
+                      response.status_code, response.text)
+        return response
+
+    def _delete(self, url, session=None, timeout=None):
+        _timeout = timeout or self._timeout
+        _session = session or self._api_session
+        logging.debug('url associated with delete request: %s',
+                      pprint.pformat(url))
+        response = _session.delete(url, timeout=_timeout)
+        logging.debug('Deleting from SignalFx %s (%d %s)',
+                      'succeeded' if response.ok else 'failed',
+                      response.status_code, response.text)
+        return response
+
+    def _search_metrics_and_metadata(self, metadata_endpoint, query,
+                                     order_by=None, offset=None,
+                                     limit=None, timeout=None):
+        """
+        generic function for elasticsearch queries; can search metrics,
+            dimensions, metrictimeseries by changing metadata_endpoint
+        Args:
+            metadata_endpoint (string): API endpoint suffix (e.g. 'v2/metric')
+            query (string): elasticsearch string query
+            order_by (optional[string]): property by which to order results
+            offset (optional[int]): number of results to skip for pagination
+                (default=0)
+            limit (optional[int]): how many results to return (default=50)
+            timeout (optional[int]): how long to wait for response (in seconds)
+
+        Returns:
+            dictionary of query result
+        """
+        logging.debug('Performing an elasticsearch for %(qry)s at %(pt)s',
+                      {'qry': query, 'pt': metadata_endpoint})
+        url_to_get = '{0}/{1}?query={2}'.format(self._api_endpoint,
+                                                metadata_endpoint,
+                                                query)
+        if order_by is not None:
+            url_to_get += '&orderBy=' + order_by
+        # for offset and limit, use API defaults (by leaving them out of url)
+        if offset is not None:
+            url_to_get += '&offset=' + str(offset)
+        if limit is not None:
+            url_to_get += '&limit=' + str(limit)
+        _timeout = timeout or self._timeout
+        resp = self._get(url_to_get, session=self._api_session,
+                         timeout=_timeout)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_object_by_name(self, object_name, object_endpoint, timeout=None):
+        """
+        generic function to get object (metadata, tag, ) by name from SignalFx.
+
+        Args:
+            object_name (string): name of the object (e.g. 'jvm.cpu.load')
+            object_endpoint (string): API endpoint suffix (e.g. 'v2/tag')
+
+        Returns:
+            dictionary of response
+        """
+        _timeout = timeout or self._timeout
+        resp = self._get('{0}/{1}/{2}'.format(self._api_endpoint,
+                                              object_endpoint, object_name),
+                         session=self._api_session, timeout=_timeout)
+        resp.raise_for_status()
+        return resp.json()
+
+    # functionality related to metrics
+    def search_metrics(self, *args, **kwargs):
+        """
+        Args:
+            query (string): elasticsearch string query
+            order_by (optional[string]): property by which to order results
+            offset (optional[int]): number of results to skip for pagination
+                (default=0)
+            limit (optional[int]): how many results to return (default=50)
+            timeout (optional[int]): how long to wait for response (in seconds)
+
+        Returns:
+            result of query search on metrics
+        """
+        return self._search_metrics_and_metadata(
+            self._METRIC_ENDPOINT_SUFFIX, *args, **kwargs)
+
+    def get_metric_by_name(self, metric_name, **kwargs):
+        """
+        get a metric by name
+
+        Args:
+            metric_name (string): name of metric
+
+        Returns:
+            dictionary of response
+        """
+        return self._get_object_by_name(metric_name,
+                                        self._METRIC_ENDPOINT_SUFFIX,
+                                        **kwargs)
+
+    def update_metric_by_name(self, metric_name, metric_type, description=None,
+                              custom_properties=None, tags=None, **kwargs):
+        """
+        Create or update a metric object
+
+        Args:
+            metric_name (string): name of metric
+            type (string): metric type, must be one of 'gauge', 'counter',
+                            'cumulative_counter'
+            description (optional[string]): a description
+            custom_properties (optional[dict]): dictionary of custom properties
+            tags (optional[list of strings]): list of tags associated with
+                metric
+        """
+        data = self.update_metric(
+            metric_type, description=description,
+            custom_properties=custom_properties, tags=tags)
+        resp = self._put('{0}/{1}/{2}'.format(self._api_endpoint,
+                                              self._METRIC_ENDPOINT_SUFFIX,
+                                              str(metric_name)),
+                         data=json.dumps(data), session=self._api_session,
+                         **kwargs)
+        resp.raise_for_status()
+        return resp.json()
+
+    # functionality related to dimensions
+    def search_dimensions(self, *args, **kwargs):
+        """
+        Args:
+            query (string): elasticsearch string query
+            order_by (optional[string]): property by which to order results
+            offset (optional[int]): number of results to skip for pagination
+                (default=0)
+            limit (optional[int]): how many results to return (default=50)
+            timeout (optional[int]): how long to wait for response (in seconds)
+
+        Returns:
+            result of query search on dimensions
+        """
+        return self._search_metrics_and_metadata(
+            self._DIMENSION_ENDPOINT_SUFFIX, *args, **kwargs)
+
+    def get_dimension(self, key, value, **kwargs):
+        """
+        get a dimension by key and value
+
+        Args:
+            key (string): key of the dimension
+            value (string): value of the dimension
+
+        Returns:
+            dictionary of response
+        """
+        return self._get_object_by_name('{0}/{1}'.format(key, value),
+                                        self._DIMENSION_ENDPOINT_SUFFIX,
+                                        **kwargs)
+
+    def update_dimension(self, key, value, description=None,
+                         custom_properties=None, tags=None, **kwargs):
+        """
+        update a dimension
+        Args:
+            key (string): key of the dimension
+            value (string): value of the dimension
+            description (optional[string]): a description
+            custom_properties (optional[dict]): dictionary of custom properties
+            tags (optional[list of strings]): list of tags associated with
+                metric
+        """
+        data = self.update_metric(
+            '', description=description, custom_properties=custom_properties,
+            tags=tags)
+        del data['type']
+        # might need to delete data['key'], data['value'] when API changes
+        data['key'] = key
+        data['value'] = value
+        resp = self._put('{0}/{1}/{2}/{3}'.format(
+            self._api_endpoint, self._DIMENSION_ENDPOINT_SUFFIX, key, value),
+                         data=json.dumps(data), session=self._api_session,
+                         **kwargs)
+        resp.raise_for_status()
+        return resp.json()
+
+    # functionality related to metrictimeseries
+    def search_metric_time_series(self, *args, **kwargs):
+        """
+        Args:
+            query (string): elasticsearch string query
+            order_by (optional[string]): property by which to order results
+            offset (optional[int]): number of results to skip for pagination
+                (default=0)
+            limit (optional[int]): how many results to return (default=50)
+            timeout (optional[int]): how long to wait for response (in seconds)
+
+        Returns:
+            result of query search on metric time series
+
+        """
+        return self._search_metrics_and_metadata(self._MTS_ENDPOINT_SUFFIX,
+                                                 *args, **kwargs)
+
+    def get_metric_time_series(self, mts_id, **kwargs):
+        """get a metric time series by id"""
+        return self._get_object_by_name(mts_id,
+                                        self._MTS_ENDPOINT_SUFFIX,
+                                        **kwargs)
+
+    # functionality related to tags
+    def search_tags(self, *args, **kwargs):
+        """
+        Args:
+            query (string): elasticsearch string query
+            order_by (optional[string]): property by which to order results
+            offset (optional[int]): number of results to skip for pagination
+                (default=0)
+            limit (optional[int]): how many results to return (default=50)
+            timeout (optional[int]): how long to wait for response (in seconds)
+
+        Returns:
+            result of query search on tags
+
+        """
+        return self._search_metrics_and_metadata(self._TAG_ENDPOINT_SUFFIX,
+                                                 *args, **kwargs)
+
+    def get_tag(self, tag_name, **kwargs):
+        """get a tag by name
+
+        Args:
+            tag_name (string): name of tag to get
+
+        Returns:
+            dictionary of the response
+
+        """
+        return self._get_object_by_name(tag_name, self._TAG_ENDPOINT_SUFFIX,
+                                        **kwargs)
+
+    def update_tag(self, tag_name, description=None,
+                   custom_properties=None, **kwargs):
+        """update a tag by name
+
+        Args:
+            tag_name (string): name of tag to update
+            description (optional[string]): a description
+            custom_properties (optional[dict]): dictionary of custom properties
+        """
+        data = super(SignalFxClient, self).update_tag(
+            description=description, custom_properties=custom_properties)
+        resp = self._put('{0}/{1}/{2}'.format(self._api_endpoint,
+                                              self._TAG_ENDPOINT_SUFFIX,
+                                              tag_name),
+                         data=json.dumps(data), session=self._api_session,
+                         **kwargs)
+        resp.raise_for_status()
+        return resp.json()
+
+    def delete_tag(self, tag_name, **kwargs):
+        """delete a tag by name
+
+        Args:
+            tag_name (string): name of tag to delete
+        """
+        resp = self._delete('{0}/{1}/{2}'.format(self._api_endpoint,
+                                                 self._TAG_ENDPOINT_SUFFIX,
+                                                 tag_name),
+                            session=self._api_session, **kwargs)
+        resp.raise_for_status()
+        # successful delete returns 204, which has no associated json
+        return resp
+
+    # functionality related to organizations (more to come)
+    def get_organization(self, **kwargs):
+        """
+        get the organization to which the user belongs
+
+        Returns:
+            dictionary of the response
+
+        """
+        resp = self._get('{0}/{1}'.format(self._api_endpoint,
+                                          self._ORGANIZATION_ENDPOINT_SUFFIX),
+                         session=self._api_session, **kwargs)
+        resp.raise_for_status()
+        return resp.json()
 
 
 class ProtoBufSignalFx(SignalFxClient):

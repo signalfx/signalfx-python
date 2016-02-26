@@ -128,6 +128,20 @@ sfx.send_event(
 
 See `examples/generic_usecase.py` for a complete code example.
 
+### Metric metadata and tags
+
+The library includes functions that search, get, and update metric
+metadata and tags.  Deleting tags is also supported.
+
+```python
+import signalfx
+
+sfx = signalfx.SignalFx('MY_TOKEN')
+sfx.update_tag('some_tag_name',
+                description='an example tag',
+                custom_properties={'version':'some_number'})
+```
+
 ### AWS integration
 
 Optionally, the client may be configured to append additional dimensions to
