@@ -24,3 +24,4 @@ test:
     - python tests/test_data_reporting.py
     - python tests/live_tests.py --metric_name 'MET' --tag_name 'TG' --key 'K' --value 'V'
     - py.test tests/unit_tests.py
+
