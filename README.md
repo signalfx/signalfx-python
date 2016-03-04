@@ -214,16 +214,3 @@ import signalfx
 sfx = signalfx.SignalFx('MY_TOKEN')
 atexit.register(sfx.stop)
 ```
-
-#### SSLError when sending events by calling send_event() method
-
-```
-ERROR:root:Posting to SignalFx failed.
-SSLError: hostname 'ingest.signalfx.com' doesn't match either of
-'*.signalfuse.com', 'signalfuse.com'.
-```
-
-Root Cause: SignalFx's API endpoints have SSL SNI enabled and the
-`urllib3` module in Python versions prior to 2.7.8 had a bug that causes
-the above issue. This was fixed in later versions of Python; we
-recommend using Python 2.7.9 or newer when using this library.
