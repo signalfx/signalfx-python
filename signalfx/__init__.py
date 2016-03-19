@@ -32,6 +32,7 @@ import logging
 
 import client
 from constants import *  # flake8: noqa
+import signalflow
 
 
 __author__ = 'SignalFx, Inc'

@@ -8,10 +8,11 @@ import Queue
 import requests
 import threading
 
-import version
 from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_API_ENDPOINT,\
     DEFAULT_TIMEOUT, DEFAULT_BATCH_SIZE, JSON_HEADER_CONTENT_TYPE, \
     PROTOBUF_HEADER_CONTENT_TYPE, SUPPORTED_EVENT_CATEGORIES
+import signalflow
+import version
 
 try:
     import generated_protocol_buffers.signal_fx_protocol_buffers_pb2 as sf_pbuf
@@ -62,8 +63,7 @@ class BaseSignalFx(object):
         logging.debug('Sending event to SignalFx: %s', data)
         return data
 
-    @staticmethod
-    def update_metric(metric_type, description=None,
+    def update_metric(self, metric_type, description=None,
                       custom_properties=None, tags=None):
         data = {'type': metric_type.upper(),
                 'description': description or '',
@@ -72,8 +72,7 @@ class BaseSignalFx(object):
         logging.debug('Sending metric metadata to SignalFx: %s', data)
         return data
 
-    @staticmethod
-    def update_tag(description=None, custom_properties=None):
+    def update_tag(self, description=None, custom_properties=None):
         data = {'description': description or '',
                 'customProperties': custom_properties or {}}
         logging.debug('Sending tag data to SignalFx: %s', data)
@@ -88,16 +87,22 @@ class SignalFxClient(BaseSignalFx):
     and functionality related to metadata and tags are supported.
     More will come later.
     """
+
+    _THREAD_NAME = 'SignalFxDatapointSendThread'
+
     _HEADER_API_TOKEN_KEY = 'X-SF-Token'
     _HEADER_USER_AGENT_KEY = 'User-Agent'
+
     _INGEST_ENDPOINT_DATAPOINT_SUFFIX = 'v2/datapoint'
     _INGEST_ENDPOINT_EVENT_SUFFIX = 'v2/event'
-    _THREAD_NAME = 'SignalFxDatapointSendThread'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _MTS_ENDPOINT_SUFFIX = 'v2/metrictimeseries'
     _TAG_ENDPOINT_SUFFIX = 'v2/tag'
     _ORGANIZATION_ENDPOINT_SUFFIX = 'v2/organization'
+
+    class QueueStopSignal(object):
+        pass
 
     def __init__(self, api_token, **kwargs):
         super(SignalFxClient, self).__init__(api_token, **kwargs)
@@ -109,8 +114,10 @@ class SignalFxClient(BaseSignalFx):
         self._lock = threading.Lock()
         self._extra_dimensions = {}
 
-    class QueueStopSignal(object):
-        pass
+    def signalflow(self):
+        """Returns a ready-to-use SignalFlow client connected to the same
+        endpoint as this SignalFxClient."""
+        return signalflow.Client(self._api_endpoint, self._api_token)
 
     def _add_user_agents(self, session):
         # Adding user agent for the SignalFx Library Module
