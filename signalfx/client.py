@@ -245,7 +245,10 @@ class SignalFxClient(BaseSignalFx):
 
     def stop(self, msg='Thread stopped'):
         """Stop send thread and flush points for a safe exit."""
-        self._thread_running = False
+        with self._lock:
+            if not self._thread_running:
+                return
+            self._thread_running = False
         self._queue.put(self.queue_stop_signal)
         self._send_thread.join()
         logging.debug(msg)
