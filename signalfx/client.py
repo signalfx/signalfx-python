@@ -264,7 +264,7 @@ class SignalFxClient(BaseSignalFx):
                        len(datapoints_list) < self._batch_size):
                     tmp_dp = self._queue.get()
                     if tmp_dp != self.queue_stop_signal:
-                        datapoints_list.append(self._queue.get())
+                        datapoints_list.append(tmp_dp)
                 try:
                     self._post(self._batch_data(datapoints_list),
                                '{0}/{1}'.format(
