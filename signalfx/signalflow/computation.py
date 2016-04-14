@@ -45,8 +45,6 @@ class Computation(object):
         self._program = program
         self._params = params
 
-        self._progress = 0
-        self._complete = False
         self._resolution = None
         self._metadata = {}
         self._last_logical_ts = None
@@ -72,10 +70,6 @@ class Computation(object):
     @property
     def program(self):
         return self._program
-
-    @property
-    def progress(self):
-        return self._progress
 
     @property
     def resolution(self):
@@ -108,31 +102,19 @@ class Computation(object):
         for event in self._events.events():
             message = messages.StreamMessage.decode(event)
             if isinstance(message, messages.EndOfChannelMessage):
-                self._complete = True
                 break
-
-            if isinstance(message, messages.JobProgressMessage):
-                self._progress = message.progress
-                continue
 
             # Intercept metadata messages to accumulate received metadata.
             # TODO(mpetazzoni): this can accumulate metadata without bounds if
             # a computation has a high rate of member churn.
-            if isinstance(message, messages.MetadataMessage):
+            elif isinstance(message, messages.MetadataMessage):
                 self._metadata[message.tsid] = message.properties
-                continue
-
-            if isinstance(message, messages.DigestMessage):
+            elif isinstance(message, messages.DigestMessage):
                 self._process_message_digest(message.digest)
-                continue
-
-            # Automatically and immediately yield events.
-            if isinstance(message, messages.EventMessage):
-                yield message
 
             # Accumulate data messages and release them when we have received
             # all batches for the same logical timestamp.
-            if isinstance(message, messages.DataMessage):
+            elif isinstance(message, messages.DataMessage):
                 if not last_data_batch:
                     last_data_batch = message
                 elif message.logical_timestamp_ms == \
@@ -142,6 +124,10 @@ class Computation(object):
                     to_yield, last_data_batch = last_data_batch, message
                     self._last_logical_ts = to_yield.logical_timestamp_ms
                     yield to_yield
+
+            # Automatically and immediately yield all other messages.
+            else:
+                yield message
 
         # Yield last batch, even if potentially incomplete.
         if last_data_batch:
