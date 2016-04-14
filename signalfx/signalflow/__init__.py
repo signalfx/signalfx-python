@@ -34,13 +34,9 @@ class Client(object):
 
         self._http = urllib3.connectionpool.connection_from_url(**pool_args)
 
-    def execute(self, program, start, stop=None, resolution=None,
+    def execute(self, program, start=None, stop=None, resolution=None,
                 max_delay=None, persistent=False):
         """Execute the given SignalFlow program and stream the output back."""
-        if not program or not start:
-            raise ValueError()
-
-        # Build query parameters
         params = {
             'start': start,
             'stop': stop,
