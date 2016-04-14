@@ -38,11 +38,6 @@ class Computation(object):
     _DATA_MESSAGE_TYPE = 'DATA'
     _EVENT_MESSAGE_TYPE = 'EVENT'
 
-    _REPR_IGNORED_DIMENSIONS = set(['sf_metric',
-                                    'sf_eventType',
-                                    'jobId',
-                                    'programId'])
-
     def __init__(self, conn, url, program, params):
         self._id = None
         self._conn = conn
@@ -96,28 +91,6 @@ class Computation(object):
         """Return the full metadata object for the given timeseries (by its
         ID), if available."""
         return self._metadata.get(tsid)
-
-    def get_timeseries_repr(self, tsid):
-        """Return a representation of a timeseries' identity usable for
-        display. If the timeseries type has a known fixed dimension, it is
-        promoted to the front of the representation."""
-        obj = self.get_metadata(tsid)
-        if not obj:
-            return None
-
-        result = []
-
-        if obj['sf_type'] == 'MetricTimeSeries':
-            result.append(obj['sf_metric'])
-        elif obj['sf_type'] == 'EventTimeSeries':
-            result.append(obj['sf_eventType'])
-
-        key = filter(lambda k: k not in Computation._REPR_IGNORED_DIMENSIONS,
-                     obj['sf_key'])
-        name = '.'.join(map(lambda k: obj[k], sorted(key)))
-        result.append(name)
-
-        return '/'.join(filter(None, result))
 
     def stream(self):
         """Iterate over the messages from the computation's output.
