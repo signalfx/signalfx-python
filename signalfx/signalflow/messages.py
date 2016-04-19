@@ -87,10 +87,6 @@ class DigestMessage(ControlMessage):
     def __init__(self, timestamp_ms, digest):
         super(DigestMessage, self).__init__(timestamp_ms)
         self._digest = digest
-        for message in self._digest:
-            payload = message.get('jsonPayload')
-            if payload:
-                message['jsonPayload'] = json.loads(payload)
 
     @property
     def digest(self):

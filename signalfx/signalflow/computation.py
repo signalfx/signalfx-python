@@ -149,4 +149,4 @@ class Computation(object):
             # Extract the output resolution from the appropriate message, if
             # it's present.
             if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
-                self._resolution = message['jsonPayload']['resolutionMs']
+                self._resolution = message['contents']['resolutionMs']
