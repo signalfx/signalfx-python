@@ -6,7 +6,13 @@ import sseclient
 from . import messages
 
 
-class ComputationExecutionError(Exception):
+class ComputationException(Exception):
+    pass
+
+
+class ComputationExecutionError(ComputationException):
+    """Exception thrown if the computation could not be executed because the
+    request to start the computation failed."""
 
     def __init__(self, code, message=None):
         self._code = code
@@ -24,6 +30,27 @@ class ComputationExecutionError(Exception):
         return self._message
 
 
+class ComputationAborted(ComputationException):
+    """Exception thrown if the computation is aborted or failed after being
+    requested."""
+
+    def __init__(self, abort_info):
+        self._state = abort_info['sf_job_abortState']
+        self._reason = abort_info['sf_job_abortReason']
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def reason(self):
+        return self._reason
+
+    def __str__(self):
+        return 'Computation {0}: {1}'.format(
+            self._state.lower(), self._reason)
+
+
 class Computation(object):
     """A live handle to a running SignalFlow computation.
 
@@ -38,6 +65,13 @@ class Computation(object):
     _DATA_MESSAGE_TYPE = 'DATA'
     _EVENT_MESSAGE_TYPE = 'EVENT'
 
+    STATE_UNKNOWN = 0
+    STATE_STREAM_STARTED = 1
+    STATE_COMPUTATION_STARTED = 2
+    STATE_DATA_RECEIVED = 3
+    STATE_COMPLETED = 4
+    STATE_ABORTED = 5
+
     def __init__(self, conn, url, program, params):
         self._id = None
         self._conn = conn
@@ -45,6 +79,7 @@ class Computation(object):
         self._program = program
         self._params = params
 
+        self._state = Computation.STATE_UNKNOWN
         self._resolution = None
         self._metadata = {}
         self._last_logical_ts = None
@@ -75,8 +110,9 @@ class Computation(object):
     def resolution(self):
         return self._resolution
 
-    def is_complete(self):
-        return self._complete
+    @property
+    def state(self):
+        return self._state
 
     def get_known_tsids(self):
         return sorted(self._metadata.keys())
@@ -101,7 +137,16 @@ class Computation(object):
         last_data_batch = None
         for event in self._events.events():
             message = messages.StreamMessage.decode(event)
+            if isinstance(message, messages.StreamStartMessage):
+                self._state = Computation.STATE_STREAM_STARTED
+                yield message
+
+            if isinstance(message, messages.ChannelAbortMessage):
+                self._state = Computation.STATE_ABORTED
+                raise ComputationAborted(message.abort_info)
+
             if isinstance(message, messages.EndOfChannelMessage):
+                self._state = Computation.STATE_COMPLETED
                 break
 
             # Intercept metadata messages to accumulate received metadata.
@@ -115,6 +160,7 @@ class Computation(object):
             # Accumulate data messages and release them when we have received
             # all batches for the same logical timestamp.
             elif isinstance(message, messages.DataMessage):
+                self._state = Computation.STATE_DATA_RECEIVED
                 if not last_data_batch:
                     last_data_batch = message
                 elif message.logical_timestamp_ms == \

@@ -40,6 +40,8 @@ class ControlMessage(StreamMessage):
             return JobProgressMessage.decode(payload)
         if payload['event'] == 'MESSAGE_DIGEST':
             return DigestMessage.decode(payload)
+        if payload['event'] == 'CHANNEL_ABORT':
+            return ChannelAbortMessage.decode(payload)
         if payload['event'] == 'END_OF_CHANNEL':
             return EndOfChannelMessage.decode(payload)
         logging.warn('Unsupported control message %s; ignoring!',
@@ -95,6 +97,22 @@ class DigestMessage(ControlMessage):
     @staticmethod
     def decode(payload):
         return DigestMessage(payload['timestampMs'], payload['digest'])
+
+
+class ChannelAbortMessage(ControlMessage):
+
+    def __init__(self, timestamp_ms, abort_info):
+        super(ChannelAbortMessage, self).__init__(timestamp_ms)
+        self._abort_info = abort_info
+
+    @property
+    def abort_info(self):
+        return self._abort_info
+
+    @staticmethod
+    def decode(payload):
+        return ChannelAbortMessage(payload['timestampMs'],
+                                   payload['abortInfo'])
 
 
 class EndOfChannelMessage(ControlMessage):
