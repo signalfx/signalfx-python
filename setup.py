@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-from signalfx.version import name, version
+execfile('signalfx/version.py')
 
 with open('README.md') as readme:
     long_description = readme.read()
@@ -14,8 +14,8 @@ with open('requirements.txt') as f:
     requirements = [line.strip() for line in f.readlines()]
 
 setup(
-    name=name,
-    version=version,
+    name=name,  # noqa
+    version=version,  # noqa
     author='SignalFx, Inc',
     author_email='info@signalfx.com',
     description='SignalFx Python Library',
