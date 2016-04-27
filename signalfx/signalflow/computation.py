@@ -154,8 +154,8 @@ class Computation(object):
             # a computation has a high rate of member churn.
             elif isinstance(message, messages.MetadataMessage):
                 self._metadata[message.tsid] = message.properties
-            elif isinstance(message, messages.DigestMessage):
-                self._process_message_digest(message.digest)
+            elif isinstance(message, messages.InfoMessage):
+                self._process_message(message.message)
 
             # Accumulate data messages and release them when we have received
             # all batches for the same logical timestamp.
@@ -184,15 +184,9 @@ class Computation(object):
         entirely consumed."""
         self._events.close()
 
-    def _process_message_digest(self, digest):
-        """Process a message digest sent by the computation.
-
-        Message digests contain information about the running computation that
-        we can extract to provide more details about what the computation is
-        doing, any warnings that we might want to surface to the user, etc.
-        """
-        for message in digest:
-            # Extract the output resolution from the appropriate message, if
-            # it's present.
-            if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
-                self._resolution = message['contents']['resolutionMs']
+    def _process_message(self, message):
+        """Process an information message received from the computation."""
+        # Extract the output resolution from the appropriate message, if
+        # it's present.
+        if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
+            self._resolution = message['contents']['resolutionMs']

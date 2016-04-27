@@ -11,12 +11,16 @@ class StreamMessage(object):
         payload = json.loads(event.data)
         if event.event == 'control-message':
             return ControlMessage.decode(payload)
-        if event.event == 'metadata':
-            return MetadataMessage.decode(payload)
+        if event.event == 'message':
+            return InfoMessage.decode(payload)
         if event.event == 'event':
             return EventMessage.decode(payload)
+        if event.event == 'metadata':
+            return MetadataMessage.decode(payload)
         if event.event == 'data':
             return DataMessage.decode(payload)
+        if event.event == 'error':
+            return ErrorMessage.decode(payload)
         logging.warn('Unsupported event type; ignoring %s!', event)
         return None
 
@@ -38,8 +42,6 @@ class ControlMessage(StreamMessage):
             return JobStartMessage.decode(payload)
         if payload['event'] == 'JOB_PROGRESS':
             return JobProgressMessage.decode(payload)
-        if payload['event'] == 'MESSAGE_DIGEST':
-            return DigestMessage.decode(payload)
         if payload['event'] == 'CHANNEL_ABORT':
             return ChannelAbortMessage.decode(payload)
         if payload['event'] == 'END_OF_CHANNEL':
@@ -84,21 +86,6 @@ class JobProgressMessage(ControlMessage):
         return JobProgressMessage(payload['timestampMs'], payload['progress'])
 
 
-class DigestMessage(ControlMessage):
-
-    def __init__(self, timestamp_ms, digest):
-        super(DigestMessage, self).__init__(timestamp_ms)
-        self._digest = digest
-
-    @property
-    def digest(self):
-        return self._digest
-
-    @staticmethod
-    def decode(payload):
-        return DigestMessage(payload['timestampMs'], payload['digest'])
-
-
 class ChannelAbortMessage(ControlMessage):
 
     def __init__(self, timestamp_ms, abort_info):
@@ -123,6 +110,44 @@ class EndOfChannelMessage(ControlMessage):
     @staticmethod
     def decode(payload):
         return EndOfChannelMessage(payload['timestampMs'])
+
+
+class InfoMessage(StreamMessage):
+
+    def __init__(self, logical_timestamp_ms, message):
+        self._logical_timestamp_ms = logical_timestamp_ms
+        self._message = message
+
+    @property
+    def logical_timestamp_ms(self):
+        return self._logical_timestamp_ms
+
+    @property
+    def message(self):
+        return self._message
+
+    @staticmethod
+    def decode(payload):
+        return InfoMessage(payload['logicalTimestampMs'], payload['message'])
+
+
+class EventMessage(StreamMessage):
+
+    def __init__(self, timestamp_ms, properties):
+        self._timestamp_ms = timestamp_ms
+        self._properties = properties
+
+    @property
+    def timestamp_ms(self):
+        return self._timestamp_ms
+
+    @property
+    def properties(self):
+        return self._properties
+
+    @staticmethod
+    def decode(payload):
+        return EventMessage(payload['timestampMs'], payload['properties'])
 
 
 class MetadataMessage(StreamMessage):
@@ -166,20 +191,15 @@ class DataMessage(StreamMessage):
         return DataMessage(payload['logicalTimestampMs'], payload['data'])
 
 
-class EventMessage(StreamMessage):
+class ErrorMessage(StreamMessage):
 
-    def __init__(self, timestamp_ms, properties):
-        self._timestamp_ms = timestamp_ms
-        self._properties = properties
-
-    @property
-    def timestamp_ms(self):
-        return self._timestamp_ms
+    def __init__(self, errors):
+        self._errors = errors
 
     @property
-    def properties(self):
-        return self._properties
+    def errors(self):
+        return self._errors
 
     @staticmethod
     def decode(payload):
-        return EventMessage(payload['timestampMs'], payload['properties'])
+        return ErrorMessage(payload['errors'])
