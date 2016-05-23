@@ -1,27 +1,26 @@
 # Copyright (C) 2016 SignalFx, Inc. All rights reserved.
 
-import json
 import logging
 
 
 class StreamMessage(object):
 
     @staticmethod
-    def decode(event):
-        payload = json.loads(event.data)
-        if event.event == 'control-message':
+    def decode(mtype, payload):
+        if mtype == 'control-message':
             return ControlMessage.decode(payload)
-        if event.event == 'message':
+        if mtype == 'message':
             return InfoMessage.decode(payload)
-        if event.event == 'event':
+        if mtype == 'event':
             return EventMessage.decode(payload)
-        if event.event == 'metadata':
+        if mtype == 'metadata':
             return MetadataMessage.decode(payload)
-        if event.event == 'data':
+        if mtype == 'data':
             return DataMessage.decode(payload)
-        if event.event == 'error':
+        if mtype == 'error':
             return ErrorMessage.decode(payload)
-        logging.warn('Unsupported event type; ignoring %s!', event)
+        logging.warn('Unsupported event type; ignoring %s: %s!',
+                     mtype, payload)
         return None
 
 
@@ -63,12 +62,17 @@ class StreamStartMessage(ControlMessage):
 
 class JobStartMessage(ControlMessage):
 
-    def __init__(self, timestamp_ms):
+    def __init__(self, timestamp_ms, handle):
         super(JobStartMessage, self).__init__(timestamp_ms)
+        self._handle = handle
+
+    @property
+    def handle(self):
+        return self._handle
 
     @staticmethod
     def decode(payload):
-        return JobStartMessage(payload['timestampMs'])
+        return JobStartMessage(payload['timestampMs'], payload['handle'])
 
 
 class JobProgressMessage(ControlMessage):
