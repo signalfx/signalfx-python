@@ -63,7 +63,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def start(self, program, params):
         request = {'type': 'start'}
         request.update(params)
-        self.send(json.dumps(request))
+        self._send(json.dumps(request))
 
     def attach(self, handle, params):
         channel = WebSocketComputationChannel(self.detach)
@@ -174,10 +174,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         return timestamp, datapoints
 
     def closed(self, code, reason=None):
-        # TODO(mpetazzoni): implement automatic reconnect at the WebSocket
-        # levels. Restart of the channels/computations is handled by the Client
-        # object.
-        logging.info('Lost WebSocket connection with %s channels: %s %s.',
+        logging.warn('Lost WebSocket connection with %s channels: %s %s.',
                      len(self._channels), code, reason)
         self._channels.clear()
         self._connected = False
