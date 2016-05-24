@@ -41,10 +41,10 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def __str__(self):
         return self._ws_endpoint
 
-    def close(self):
+    def close(self, code=1001, reason=None):
         if not self._connected:
             return
-        WebSocketClient.close(self)
+        WebSocketClient.close(self, code, reason)
 
     def execute(self, program, params):
         channel = WebSocketComputationChannel(self.detach)
