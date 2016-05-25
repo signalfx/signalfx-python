@@ -3,7 +3,7 @@
 import base64
 import json
 import logging
-import queue
+from six.moves import queue
 import struct
 from ws4py.client.threadedclient import WebSocketClient
 
