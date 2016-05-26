@@ -5,9 +5,10 @@ import json
 import logging
 from six.moves import queue
 import struct
+import threading
 from ws4py.client.threadedclient import WebSocketClient
 
-from . import channel, messages, transport
+from . import channel, errors, messages, transport
 
 
 class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
@@ -36,6 +37,9 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
 
         self._server_time = None
         self._connected = False
+        self._error = None
+
+        self._connection_cv = threading.Condition()
         self._channels = {}
 
     def __str__(self):
@@ -101,15 +105,20 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         self._send(request)
 
     def _send(self, request):
-        if not self._connected:
-            self.connect()
+        with self._connection_cv:
+            if not self._connected:
+                self.connect()
+            while not self._connected and not self._error:
+                self._connection_cv.wait()
+            if not self._connected:
+                raise self._error
         self.send(json.dumps(request))
 
     def opened(self):
-        # Send authentication request
+        """Handler called when the WebSocket connection is opened. The first
+        thing to do then is to authenticate ourselves."""
         request = {'type': 'authenticate', 'token': self._token}
         self.send(json.dumps(request))
-        self._connected = True
 
     def received_message(self, message):
         decoded = None
@@ -142,10 +151,23 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             self._process_message(decoded)
 
     def _process_message(self, message):
-        if message.get('event') == 'KEEP_ALIVE':
+        # Intercept KEEP_ALIVE control messages
+        if message.get('type') == 'control-message' and \
+                message.get('event') == 'KEEP_ALIVE':
             self._server_time = message.get('timestampMs', self._server_time)
             return
 
+        # Authenticated messages inform us that our authentication has been
+        # accepted and we can now consider the socket as "connected".
+        if message.get('type') == 'authenticated':
+            with self._connection_cv:
+                self._connected = True
+                self._connection_cv.notify()
+            logging.debug('WebSocket connection authenticated as %s (in %s)',
+                          message.get('userId'), message.get('orgId'))
+            return
+
+        # All other messages should have a channel.
         channel = message.get('channel')
         if not channel or channel not in self._channels:
             logging.warn('Received message for unknown channel (%s)', channel)
@@ -153,7 +175,10 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
 
         self._channels[channel].offer(message)
 
-        if message.get('type') in ['END_OF_CHANNEL', 'ABORT_CHANNEL']:
+        # If we see an END_OF_CHANNEL or ABORT_CHANNEL message, we can clear
+        # out our reference to said channel; nothing more will happen on it.
+        if message.get('type') == 'control-message' and \
+                message.get('event') in ['END_OF_CHANNEL', 'ABORT_CHANNEL']:
             self._channels[channel].offer(
                     WebSocketComputationChannel.END_SENTINEL)
             del self._channels[channel]
@@ -174,10 +199,14 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         return timestamp, datapoints
 
     def closed(self, code, reason=None):
-        logging.warn('Lost WebSocket connection with %s channels: %s %s.',
-                     len(self._channels), code, reason)
+        """Handler called when the WebSocket is closed. Status code 1000
+        denotes a normal close; all others are errors."""
         self._channels.clear()
-        self._connected = False
+        if code != 1000:
+            self._error = errors.SignalFlowException(code, reason)
+        with self._connection_cv:
+            self._connected = False
+            self._connection_cv.notify()
 
 
 class WebSocketComputationChannel(channel._Channel):
@@ -199,6 +228,12 @@ class WebSocketComputationChannel(channel._Channel):
                 event = self._q.get(timeout=0.1)
                 if event == WebSocketComputationChannel.END_SENTINEL:
                     raise StopIteration()
+
+                error = event.get('error')
+                if error:
+                    raise errors.SignalFlowException(
+                            error, event.get('message'))
+
                 return messages.StreamMessage.decode(event['type'], event)
             except queue.Empty:
                 pass
