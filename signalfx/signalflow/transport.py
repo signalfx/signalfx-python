@@ -1,5 +1,7 @@
 # Copyright (C) 2016 SignalFx, Inc. All rights reserved.
 
+from .. import constants
+
 
 class _SignalFlowTransport(object):
     """Base class for transports to the SignalFlow API.
@@ -11,8 +13,10 @@ class _SignalFlowTransport(object):
     WebSocket connection.
     """
 
-    def __init__(self, api_endpoint, token):
+    def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
+                 timeout=constants.DEFAULT_TIMEOUT):
         """Initialize the transport to the given endpoint, using the given
         authorization token."""
-        self._api_endpoint = api_endpoint
         self._token = token
+        self._endpoint = endpoint
+        self._timeout = timeout

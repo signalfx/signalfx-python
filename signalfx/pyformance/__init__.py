@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2014 SignalFuse, Inc.
-# Copyright (C) 2015 SignalFx, Inc.
+# Copyright (C) 2014 SignalFuse, Inc. All rights reserved.
+# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
 from pyformance.reporters import reporter
 import signalfx
@@ -19,22 +19,23 @@ class SignalFxReporter(reporter.Reporter):
     """
 
     def __init__(
-            self, api_token, ingest_endpoint=signalfx.DEFAULT_INGEST_ENDPOINT,
+            self, token, ingest_endpoint=signalfx.DEFAULT_INGEST_ENDPOINT,
             registry=None, reporting_interval=1, default_dimensions=None):
         if default_dimensions is not None and not isinstance(
                 default_dimensions, dict):
             raise TypeError('The default_dimensions argument must be a '
                             'dict of string keys to string values.')
 
-        reporter.Reporter.__init__(self, registry=registry,
-                                   reporting_interval=reporting_interval)
+        super(SignalFxReporter, self).__init__(
+                registry=registry,
+                reporting_interval=reporting_interval)
 
         self.default_dimensions = default_dimensions
         if default_dimensions is None:
             self.default_dimensions = {}
 
-        self._sfx = signalfx.SignalFx(api_token,
-                                      ingest_endpoint=ingest_endpoint)
+        self._sfx = (signalfx.SignalFx(ingest_endpoint=ingest_endpoint)
+                     .ingest(token))
 
     def report_now(self, registry=None, timestamp=None):
         registry = registry or self.registry
@@ -75,3 +76,7 @@ class SignalFxReporter(reporter.Reporter):
             except Exception:
                 error = '{} {}'.format(r.status_code, r.text)
             logging.error('Error sending metrics to SignalFx: %s', error)
+
+    def stop(self):
+        super(SignalFxReporter, self).stop()
+        self._sfx.stop()

@@ -25,10 +25,38 @@ python setup.py install
 
 ## Usage
 
-### API access token
+This client library provides programmatic access to SignalFx's APIs:
 
-To use this library, you need a SignalFx API access token, which can be
-obtained from the SignalFx organization you want to report data into.
+* the data ingest API;
+* the metadata REST API;
+* the SignalFlow API.
+
+You start by instantiating a `signalfx.SignalFx()` object, which then
+gives you access to the API client that you want:
+
+```python
+import signalfx
+
+sfx = signalfx.SignalFx()
+
+# For the ingest API
+ingest = sfx.ingest('ORG_ACCESS_TOKEN')
+
+# For the REST API
+rest = sfx.rest('USER_ACCESS_TOKEN')
+
+# For the SignalFlow API
+flow = sfx.signalflow('USER_ACCESS_TOKEN')
+```
+
+As you may have noticed, you need to specify an access token when
+requesting one of those clients. For the ingest client, you need to
+specify your organization or team's API access token (which can be
+obtained from the SignalFx organization you want to report data into).
+For the REST API and SignalFlow API clients, you must use your user
+access token. For more information on access tokens, see the API's
+[Authentication Overview
+documentation](https://developers.signalfx.com/docs/authentication-overview).
 
 ### Reporting data
 
@@ -37,29 +65,31 @@ Basic usage of the library for reporting data goes as follows:
 ```python
 import signalfx
 
-sfx = signalfx.SignalFx('MY_TOKEN')
-sfx.send(
-    gauges=[
-      {'metric': 'myfunc.time',
-       'value': 532,
-       'timestamp': 1442960607000},
-      ...
-    ],
-    counters=[
-      {'metric': 'myfunc.calls',
-       'value': 42,
-       'timestamp': 1442960607000},
-      ...
-    ],
-    cumulative_counters=[
-      {'metric': 'myfunc.calls_cumulative',
-       'value': 10,
-       'timestamp': 1442960607000},
-      ...
-    ])
-# After all datapoints have been sent, flush any remaining messages
-# in the send queue and terminate all connections
-sfx.stop()
+sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+try:
+    sfx.send(
+        gauges=[
+          {'metric': 'myfunc.time',
+           'value': 532,
+           'timestamp': 1442960607000},
+          ...
+        ],
+        counters=[
+          {'metric': 'myfunc.calls',
+           'value': 42,
+           'timestamp': 1442960607000},
+          ...
+        ],
+        cumulative_counters=[
+          {'metric': 'myfunc.calls_cumulative',
+           'value': 10,
+           'timestamp': 1442960607000},
+          ...
+        ])
+finally:
+    # After all datapoints have been sent, flush any remaining messages
+    # in the send queue and terminate all connections.
+    sfx.stop()
 ```
 
 The `timestamp` must be a millisecond precision timestamp; the number of
@@ -89,18 +119,20 @@ the dimensions:
 ```python
 import signalfx
 
-sfx = signalfx.SignalFx('MY_TOKEN')
-sfx.send(
-    gauges=[
-      {
-        'metric': 'myfunc.time',
-        'value': 532,
-        'timestamp': 1442960607000,
-        'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
-      },
-      ...
-    ], ...)
-sfx.stop()
+sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+try:
+    sfx.send(
+        gauges=[
+          {
+            'metric': 'myfunc.time',
+            'value': 532,
+            'timestamp': 1442960607000,
+            'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
+          },
+          ...
+        ], ...)
+finally:
+    sfx.stop()
 ```
 
 See [`examples/generic_usecase.py`](examples/generic_usecase.py) for a
@@ -115,15 +147,18 @@ can be supplied as well.
 ```python
 import signalfx
 
-sfx = signalfx.SignalFx('MY_TOKEN')
-sfx.send_event(
-    event_type='deployments',
-    dimensions={
-        'host': 'myhost',
-        'service': 'myservice',
-        'instance': 'myinstance'},
-    properties={
-        'version': '2015.04.29-01'})
+sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+try:
+    sfx.send_event(
+        event_type='deployments',
+        dimensions={
+            'host': 'myhost',
+            'service': 'myservice',
+            'instance': 'myinstance'},
+        properties={
+            'version': '2015.04.29-01'})
+finally:
+    sfx.stop()
 ```
 
 See `examples/generic_usecase.py` for a complete code example.
@@ -136,7 +171,7 @@ metadata and tags. Deleting tags is also supported.
 ```python
 import signalfx
 
-sfx = signalfx.SignalFx('MY_TOKEN')
+sfx = signalfx.SignalFx().rest('MY_TOKEN')
 sfx.update_tag('tag_name',
                description='An example tag',
                custom_properties={'version': 'some_number'})
@@ -153,18 +188,23 @@ For example,
 import signalfx
 from signalfx.aws import AWS_ID_DIMENSION, get_aws_unique_id
 
-sfx = signalfx.SignalFx('your_api_token')
+sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+
+# This dimension will be added to all datapoints sent.
 sfx.add_dimensions({AWS_ID_DIMENSION: get_aws_unique_id()})
-sfx.send(
-    gauges=[
-      {
-        'metric': 'myfunc.time',
-        'value': 532,
-        'timestamp': 1442960607000
-        'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
-      },
-    ])
-sfx.stop()
+
+try:
+    sfx.send(
+        gauges=[
+          {
+            'metric': 'myfunc.time',
+            'value': 532,
+            'timestamp': 1442960607000
+            'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
+          },
+        ])
+finally:
+    sfx.stop()
 ```
 
 ### Pyformance reporter
@@ -182,7 +222,7 @@ def callme():
     # whatever
     pass
 
-sfx = signalfx.pyformance.SignalFxReporter(api_token='MY_TOKEN')
+sfx = signalfx.pyformance.SignalFxReporter(token='MY_TOKEN')
 sfx.start()
 
 callme()
@@ -192,6 +232,46 @@ gauge('test').set_value(42)
 ```
 
 See `examples/pyformance_usecase.py` for a complete code example using Pyformance.
+
+### Executing SignalFlow computations
+
+SignalFlow is SignalFx's real-time analytics computation language. The
+SignalFlow API allows SignalFx users to execute real-time streaming
+analytics computations on the SignalFx platform. For more information,
+head over to our Developers documentation:
+
+* [SignalFlow
+  Overview](https://developers.signalfx.com/docs/signalflow-overview)
+* [Getting started with the SignalFlow
+  API](https://developers.signalfx.com/docs/getting-started-with-the-signalflow-api)
+
+Executing a SignalFlow program is very simple with this client library:
+
+```
+import signalfx
+
+flow = signalfx.SignalFx().signalflow('MY_TOKEN')
+try:
+    computation = flow.execute("data('cpu.utilization').mean().publish")
+    for msg in computation.stream():
+        if isinstance(msg, signalfx.signalflow.messages.DataMessage):
+            print(msg.data)
+finally:
+    flow.close()
+```
+
+Metadata about the streamed timeseries is automatically intercepted by
+the client library and made available through the `Computation` object
+returned by `execute()`:
+
+```
+if isinstance(msg, signalfx.signalflow.messages.DataMessage):
+    for datapoint in msg.data:
+        tsid = datapoint['tsId']
+        metadata = computation.get_metadata(tsid)
+        value = datapoint['value']
+        # Display metadata and datapoint value as desired
+```
 
 ### Known Issues
 

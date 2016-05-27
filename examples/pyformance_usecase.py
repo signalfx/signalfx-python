@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
-import argparse
-import logging
-import os
-sys.path.append(os.path.realpath('..')) # flake8: noqa
+# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
 
+import argparse
+import os
+import logging
 import pyformance as pyf
-import signalfx.pyformance
 import sys
 import time
 
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..'))
+import signalfx.pyformance  # noqa
 
 
 if __name__ == '__main__':
@@ -24,8 +26,8 @@ if __name__ == '__main__':
         pyf.gauge('demo.time').set_value(time.time())
 
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    sf = signalfx.pyformance.SignalFxReporter(options.token)
-    sf.start()
+    sfx = signalfx.pyformance.SignalFxReporter(options.token)
+    sfx.start()
 
     pyf.gauge('demo.pid').set_value(os.getpid())
 
@@ -35,3 +37,5 @@ if __name__ == '__main__':
             time.sleep(0.5)
     except KeyboardInterrupt:
         pass
+
+    sfx.stop()

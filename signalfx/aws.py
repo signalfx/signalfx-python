@@ -22,7 +22,7 @@ datapoint and event:
         ])
 """
 
-# Copyright (C) 2015 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
 import logging
 import requests

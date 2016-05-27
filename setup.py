@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2013-2015 SignalFuse, Inc.
-# Copyright (C) 2015 SignalFx, Inc.
+# Copyright (C) 2013-2014 SignalFuse, Inc. All rights reserved.
+# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
 from setuptools import setup, find_packages
+
 
 execfile('signalfx/version.py')
 
