@@ -150,9 +150,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             self._process_message(decoded)
 
     def _process_message(self, message):
-        # Intercept KEEP_ALIVE control messages
-        if message.get('type') == 'control-message' and \
-                message.get('event') == 'KEEP_ALIVE':
+        # Intercept KEEP_ALIVE messages
+        if message.get('event') == 'KEEP_ALIVE':
             self._server_time = message.get('timestampMs', self._server_time)
             return
 
@@ -169,7 +168,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         # All other messages should have a channel.
         channel = message.get('channel')
         if not channel or channel not in self._channels:
-            logging.warn('Received message for unknown channel (%s)', channel)
+            logging.warn('Received message for unknown channel (%s): %s',
+                         channel, message)
             return
 
         self._channels[channel].offer(message)
