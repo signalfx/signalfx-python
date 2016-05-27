@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+
 """
 "Live" tests for SignalFx Python client library.
 
@@ -9,18 +13,16 @@ optional command line arguments:
 
 """
 
-# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
-
 import time
 import sys
 import os
 import argparse
 import requests
-# import the correct signalfx
-this_path = os.path.dirname(os.path.realpath(__file__))
-desired_path = this_path.replace('tests', '')
-if desired_path not in sys.path: sys.path.insert(0, desired_path)
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..'))
 import signalfx
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--token')
@@ -43,7 +45,7 @@ TOKEN = args.token
 gT, sT, dT, uT = 'get_tag', 'search_tags', 'delete_tag', 'update_tag'
 sD, uD, gD = 'search_dimensions', 'update_dimension', 'get_dimension'
 
-sfx = signalfx.SignalFx(TOKEN)
+sfx = signalfx.SignalFx().ingest(TOKEN)
 CLIENT_NAME = 'sfx'
 
 def test_func(client_name, func_name, sleep_time=5, msg='is being tested!',

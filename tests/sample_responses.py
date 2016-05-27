@@ -1,7 +1,7 @@
 import requests
 import json
 
-#sample GET requests
+# sample GET requests
 l = requests.models.Response()
 l._content = '{\n  "creator" : "BrppnRvAcAA",\n  "lastUpdatedBy" : "BrppnRvAcAA",\n  ' \
              '"created" : 1404424799704,\n  "lastUpdated" : 1446643344161,\n  "customProperties"' \
@@ -39,7 +39,7 @@ GETS = {
 }
 
 
-#sample PUT requests
+# sample PUT requests
 a = requests.models.Response()
 a.status_code = 200
 a._content = '{\n  "creator" : "BrppnSQAgAA",\n  "lastUpdatedBy" : "BrppnSQAgAA",\n ' \
@@ -61,7 +61,7 @@ PUTS = {
 }
 
 
-#sample DELETE requests
+# sample DELETE requests
 x, y = requests.models.Response(), requests.models.Response()
 x._content = ''
 y._content = 'Unable to find the given tag.'
@@ -69,6 +69,3 @@ y._content = 'Unable to find the given tag.'
 DELETES = {'https://api.signalfx.com/v2/tag/there' : x,
 'https://api.signalfx.com/v2/tag/not_there' : y
 }
-
-
-

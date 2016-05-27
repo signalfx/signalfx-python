@@ -1,11 +1,19 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+
 import logging
 import os
-import signalfx
 import sys
 import time
 
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..'))
+import signalfx
+
+
 MY_TOKEN = os.environ['SIGNALFX_API_TOKEN']
-sfx = signalfx.SignalFx(MY_TOKEN)
+sfx = signalfx.SignalFx().ingest(MY_TOKEN)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # Basic Usage

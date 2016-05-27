@@ -1,9 +1,10 @@
 # Copyright (C) 2016 SignalFx, Inc. All rights reserved.
 
 from . import computation, ws
+from .. import constants
 
 
-class Client(object):
+class SignalFlowClient(object):
     """SignalFx SignalFlow client.
 
     Client for SignalFx's SignalFlow real-time analytics API. Allows for the
@@ -12,9 +13,10 @@ class Client(object):
     stop existing computations.
     """
 
-    def __init__(self, api_endpoint, token,
+    def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
+                 timeout=constants.DEFAULT_TIMEOUT,
                  transport=ws.WebSocketTransport):
-        self._transport = transport(api_endpoint, token)
+        self._transport = transport(token, endpoint, timeout)
         self._computations = set([])
 
     def _get_params(self, **kwargs):

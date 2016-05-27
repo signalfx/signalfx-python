@@ -9,6 +9,7 @@ import threading
 from ws4py.client.threadedclient import WebSocketClient
 
 from . import channel, errors, messages, transport
+from .. import constants
 
 
 class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
@@ -23,17 +24,15 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
 
     _SIGNALFLOW_WEBSOCKET_ENDPOINT = 'v2/signalflow/connect'
 
-    def __init__(self, api_endpoint, token):
-        transport._SignalFlowTransport.__init__(
-                self,
-                api_endpoint.replace('http', 'ws', 1),
-                token)
-
-        self._ws_endpoint = '{0}/{1}'.format(
-                self._api_endpoint,
+    def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
+                 timeout=constants.DEFAULT_TIMEOUT):
+        ws_endpoint = '{0}/{1}'.format(
+                endpoint.replace('http', 'ws', 1),
                 WebSocketTransport._SIGNALFLOW_WEBSOCKET_ENDPOINT)
-        WebSocketClient.__init__(self, self._ws_endpoint,
-                                 heartbeat_freq=None)
+
+        transport._SignalFlowTransport.__init__(self, token, ws_endpoint,
+                                                timeout)
+        WebSocketClient.__init__(self, self._endpoint, heartbeat_freq=None)
 
         self._server_time = None
         self._connected = False
@@ -43,7 +42,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         self._channels = {}
 
     def __str__(self):
-        return self._ws_endpoint
+        return self._endpoint
 
     def close(self, code=1001, reason=None):
         if not self._connected:
