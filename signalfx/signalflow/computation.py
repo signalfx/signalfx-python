@@ -24,8 +24,16 @@ class Computation(object):
         self._metadata = {}
         self._last_logical_ts = None
 
+        self._expected_batches = 0
+        self._batch_count_detected = False
+        self._current_batch_message = None
+        self._current_batch_count = 0
+
         # Kick it off.
         self._execute()
+
+    def _execute(self):
+        self._stream = self._exec_fn(self._last_logical_ts)
 
     @property
     def id(self):
@@ -39,8 +47,9 @@ class Computation(object):
     def state(self):
         return self._state
 
-    def _execute(self):
-        self._stream = self._exec_fn(self._last_logical_ts)
+    @property
+    def last_logical_ts(self):
+        return self._last_logical_ts
 
     def close(self):
         """Manually close this computation and detach from its stream.
@@ -68,7 +77,6 @@ class Computation(object):
         generator.
         """
 
-        last_data_batch = None
         iterator = iter(self._stream)
         while self._state < Computation.STATE_COMPLETED:
             try:
@@ -104,29 +112,40 @@ class Computation(object):
 
             if isinstance(message, messages.InfoMessage):
                 self._process_info_message(message.message)
+                self._batch_count_detected = True
+                if self._current_batch_message:
+                    yield self._get_batch_to_yield()
                 continue
 
             # Accumulate data messages and release them when we have received
             # all batches for the same logical timestamp.
             if isinstance(message, messages.DataMessage):
                 self._state = Computation.STATE_DATA_RECEIVED
-                if not last_data_batch:
-                    last_data_batch = message
-                elif message.logical_timestamp_ms == \
-                        last_data_batch.logical_timestamp_ms:
-                    last_data_batch.add_data(message.data)
+
+                if not self._batch_count_detected:
+                    self._expected_batches += 1
+
+                if not self._current_batch_message:
+                    self._current_batch_message = message
+                    self._current_batch_count = 1
+                elif ((message.logical_timestamp_ms ==
+                       self._current_batch_message.logical_timestamp_ms) and
+                      (self._current_batch_count < self._expected_batches)):
+                    self._current_batch_message.add_data(message.data)
+                    self._current_batch_count += 1
                 else:
-                    to_yield, last_data_batch = last_data_batch, message
-                    self._last_logical_ts = to_yield.logical_timestamp_ms
-                    yield to_yield
+                    self._batch_count_detected = True
+
+                if self._current_batch_count == self._expected_batches:
+                    yield self._get_batch_to_yield()
                 continue
 
             # Automatically and immediately yield all other messages.
             yield message
 
         # Yield last batch, even if potentially incomplete.
-        if last_data_batch:
-            yield last_data_batch
+        if self._current_batch_message:
+            yield self._get_batch_to_yield()
 
     def _process_info_message(self, message):
         """Process an information message received from the computation."""
@@ -134,3 +153,12 @@ class Computation(object):
         # it's present.
         if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
             self._resolution = message['contents']['resolutionMs']
+
+    def _get_batch_to_yield(self):
+        if not self._current_batch_message:
+            return None
+        to_yield = self._current_batch_message
+        self._current_batch_message = None
+        self._current_batch_count = 0
+        self._last_logical_ts = to_yield.logical_timestamp_ms
+        return to_yield

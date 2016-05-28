@@ -91,8 +91,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             'channel': channel.name
         }
 
-        del self._channels[channel.name]
         self._send(request)
+        del self._channels[channel.name]
 
     def keepalive(self, handle):
         request = {'type': 'keepalive', 'handle': handle}
@@ -168,8 +168,6 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         # All other messages should have a channel.
         channel = message.get('channel')
         if not channel or channel not in self._channels:
-            logging.warn('Received message for unknown channel (%s): %s',
-                         channel, message)
             return
 
         self._channels[channel].offer(message)
