@@ -231,7 +231,8 @@ gauge('test').set_value(42)
 ...
 ```
 
-See `examples/pyformance_usecase.py` for a complete code example using Pyformance.
+See `examples/pyformance_usecase.py` for a complete code example using
+Pyformance.
 
 ### Executing SignalFlow computations
 
@@ -247,7 +248,7 @@ head over to our Developers documentation:
 
 Executing a SignalFlow program is very simple with this client library:
 
-```
+```python
 import signalfx
 
 flow = signalfx.SignalFx().signalflow('MY_TOKEN')
@@ -264,7 +265,7 @@ Metadata about the streamed timeseries is automatically intercepted by
 the client library and made available through the `Computation` object
 returned by `execute()`:
 
-```
+```python
 if isinstance(msg, signalfx.signalflow.messages.DataMessage):
     for datapoint in msg.data:
         tsid = datapoint['tsId']
@@ -273,9 +274,14 @@ if isinstance(msg, signalfx.signalflow.messages.DataMessage):
         # Display metadata and datapoint value as desired
 ```
 
-### Known Issues
+For more examples of how to execute SignalFlow computation with this
+library, interpret and use the returned stream messages, you can look at
+the [SignalFlow CLI](https://github.com/signalfx/signalflow-cli) and its
+implementation which uses this library.
 
-#### Sending only 1 datapoint and not seeing it in the chart
+## Known Issues
+
+### Sending only 1 datapoint and not seeing it in the chart
 
 The reason you are not seeing the metrics in the chart is because the
 script that is calling the Python client module is exiting right after
@@ -284,18 +290,18 @@ towards sending a continuous stream of metrics and was implemented to be
 asynchronous.
 
 To work around this problem (most common in short-lived scripts for
-example), register an `atexit` function to cleaning stop the datapoint
+example), register an `atexit` function to cleanly stop the datapoint
 sending thread when your program exits:
 
 ```python
 import atexit
 import signalfx
 
-sfx = signalfx.SignalFx('MY_TOKEN')
+sfx = signalfx.SignalFx().ingest('MY_TOKEN')
 atexit.register(sfx.stop)
 ```
 
-#### SSLError when working with tags, metrics, dimensions, metrictimeseries, organization
+### SSLError when working with tags, metrics, dimensions, metrictimeseries, organization
 
 ```
 ERROR:root:Posting to SignalFx failed.
