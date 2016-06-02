@@ -141,8 +141,12 @@ class Computation(object):
                     yield self._get_batch_to_yield()
                 continue
 
-            # Automatically and immediately yield all other messages.
-            yield message
+            if isinstance(message, messages.EventMessage):
+                yield message
+                continue
+
+            if isinstance(message, messages.ErrorMessage):
+                raise errors.ComputationFailed(message.errors)
 
         # Yield last batch, even if potentially incomplete.
         if self._current_batch_message:

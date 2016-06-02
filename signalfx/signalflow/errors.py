@@ -26,8 +26,7 @@ class SignalFlowException(Exception):
 
 
 class ComputationAborted(Exception):
-    """Exception thrown if the computation is aborted or failed after being
-    requested."""
+    """Exception thrown if the computation is aborted during its execution."""
 
     def __init__(self, abort_info):
         self._state = abort_info['sf_job_abortState']
@@ -44,3 +43,17 @@ class ComputationAborted(Exception):
     def __str__(self):
         return 'Computation {0}: {1}'.format(
             self._state.lower(), self._reason)
+
+
+class ComputationFailed(Exception):
+    """Exception thrown when the computation failed after being started."""
+
+    def __init__(self, errors):
+        self._errors = errors
+
+    @property
+    def errors(self):
+        return self._errors
+
+    def __str__(self):
+        return 'Computation failed ({0})'.format(', '.join(self._errors))
