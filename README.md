@@ -265,9 +265,9 @@ finally:
     flow.close()
 ```
 
-Metadata about the streamed timeseries is automatically intercepted by
-the client library and made available through the `Computation` object
-returned by `execute()`:
+Metadata about the streamed timeseries is received from `.stream()`, but
+it is automatically intercepted by the client library and made available
+through the `Computation` object returned by `execute()`:
 
 ```python
 if isinstance(msg, signalfx.signalflow.messages.DataMessage):
@@ -280,8 +280,9 @@ if isinstance(msg, signalfx.signalflow.messages.DataMessage):
 
 For more examples of how to execute SignalFlow computation with this
 library, interpret and use the returned stream messages, you can look at
-the [SignalFlow CLI](https://github.com/signalfx/signalflow-cli) and its
-implementation which uses this library.
+the simple example in [`examples/signalflow.py`](examples/signalflow.py)
+or at the [SignalFlow CLI](https://github.com/signalfx/signalflow-cli)
+and its implementation which uses this library.
 
 ## Known Issues
 
