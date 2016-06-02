@@ -38,11 +38,11 @@ class _BaseSignalFxIngestClient(object):
 
     _QUEUE_STOP = object()
 
-    def __init__(self, token, ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
+    def __init__(self, token, endpoint=DEFAULT_INGEST_ENDPOINT,
                  timeout=DEFAULT_TIMEOUT, batch_size=DEFAULT_BATCH_SIZE,
                  user_agents=None):
         self._token = token
-        self._endpoint = ingest_endpoint.rstrip('/')
+        self._endpoint = endpoint.rstrip('/')
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
 

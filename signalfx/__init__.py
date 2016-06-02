@@ -97,7 +97,7 @@ class SignalFx(object):
 
     def ingest(self, token, endpoint=None, timeout=None):
         """Obtain a datapoint and event ingest client."""
-        if ingest.sf_pbug:
+        if ingest.sf_pbuf:
             client = ingest.ProtoBufSignalFxIngestClient
         else:
             logging.warn('Protocol Buffers not installed properly; '
