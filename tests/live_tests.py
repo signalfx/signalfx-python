@@ -21,7 +21,7 @@ import requests
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '..'))
-import signalfx
+import signalfx  # noqa
 
 
 parser = argparse.ArgumentParser()
@@ -45,7 +45,7 @@ TOKEN = args.token
 gT, sT, dT, uT = 'get_tag', 'search_tags', 'delete_tag', 'update_tag'
 sD, uD, gD = 'search_dimensions', 'update_dimension', 'get_dimension'
 
-sfx = signalfx.SignalFx().ingest(TOKEN)
+sfx = signalfx.SignalFx().rest(TOKEN)
 CLIENT_NAME = 'sfx'
 
 def test_func(client_name, func_name, sleep_time=5, msg='is being tested!',
