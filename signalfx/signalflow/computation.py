@@ -93,6 +93,11 @@ class Computation(object):
             if isinstance(message, messages.JobStartMessage):
                 self._state = Computation.STATE_COMPUTATION_STARTED
                 self._id = message.handle
+                yield message
+                continue
+
+            if isinstance(message, messages.JobProgressMessage):
+                yield message
                 continue
 
             if isinstance(message, messages.ChannelAbortMessage):
