@@ -1,4 +1,4 @@
 # Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
 name = 'signalfx'
-version = '1.0.0'
+version = '1.0.1'
