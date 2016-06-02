@@ -219,13 +219,11 @@ class SignalFxRestClient(object):
             tags (optional[list of strings]): list of tags associated with
                 metric
         """
-        data = self.update_metric(
-            '', description=description, custom_properties=custom_properties,
-            tags=tags)
-        del data['type']
-        # might need to delete data['key'], data['value'] when API changes
-        data['key'] = key
-        data['value'] = value
+        data = {'description': description or '',
+                'customProperties': custom_properties or {},
+                'tags': tags or [],
+                'key': key,
+                'value': value}
         resp = self._put('{0}/{1}/{2}/{3}'.format(
             self._endpoint, self._DIMENSION_ENDPOINT_SUFFIX, key, value),
                          data=json.dumps(data), session=self._session,
