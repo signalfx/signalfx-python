@@ -108,6 +108,7 @@ class Computation(object):
             # a computation has a high rate of member churn.
             if isinstance(message, messages.MetadataMessage):
                 self._metadata[message.tsid] = message.properties
+                yield message
                 continue
 
             if isinstance(message, messages.InfoMessage):
