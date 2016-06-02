@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 execfile('signalfx/version.py')
 
-with open('README.md') as readme:
+with open('README.rst') as readme:
     long_description = readme.read()
 
 with open('requirements.txt') as f:

@@ -55,7 +55,7 @@ class SignalFxRestClient(object):
         return response
 
     def _delete(self, url, session=None, timeout=None):
-        session = session or self._api_session
+        session = session or self._session
         timeout = timeout or self._timeout
         logging.debug('url associated with delete request: %s',
                       pprint.pformat(url))
@@ -85,7 +85,7 @@ class SignalFxRestClient(object):
         """
         logging.debug('Performing an elasticsearch for %(qry)s at %(pt)s',
                       {'qry': query, 'pt': metadata_endpoint})
-        url_to_get = '{0}/{1}?query={2}'.format(self._api_endpoint,
+        url_to_get = '{0}/{1}?query={2}'.format(self._endpoint,
                                                 metadata_endpoint,
                                                 query)
         if order_by is not None:
@@ -112,7 +112,7 @@ class SignalFxRestClient(object):
             dictionary of response
         """
         timeout = timeout or self._timeout
-        resp = self._get('{0}/{1}/{2}'.format(self._api_endpoint,
+        resp = self._get('{0}/{1}/{2}'.format(self._endpoint,
                                               object_endpoint, object_name),
                          session=self._session, timeout=timeout)
         resp.raise_for_status()
@@ -167,7 +167,7 @@ class SignalFxRestClient(object):
                 'description': description or '',
                 'customProperties': custom_properties or {},
                 'tags': tags or []}
-        resp = self._put('{0}/{1}/{2}'.format(self._api_endpoint,
+        resp = self._put('{0}/{1}/{2}'.format(self._endpoint,
                                               self._METRIC_ENDPOINT_SUFFIX,
                                               str(metric_name)),
                          data=json.dumps(data), session=self._session,
@@ -219,15 +219,13 @@ class SignalFxRestClient(object):
             tags (optional[list of strings]): list of tags associated with
                 metric
         """
-        data = self.update_metric(
-            '', description=description, custom_properties=custom_properties,
-            tags=tags)
-        del data['type']
-        # might need to delete data['key'], data['value'] when API changes
-        data['key'] = key
-        data['value'] = value
+        data = {'description': description or '',
+                'customProperties': custom_properties or {},
+                'tags': tags or [],
+                'key': key,
+                'value': value}
         resp = self._put('{0}/{1}/{2}/{3}'.format(
-            self._api_endpoint, self._DIMENSION_ENDPOINT_SUFFIX, key, value),
+            self._endpoint, self._DIMENSION_ENDPOINT_SUFFIX, key, value),
                          data=json.dumps(data), session=self._session,
                          **kwargs)
         resp.raise_for_status()
@@ -299,7 +297,7 @@ class SignalFxRestClient(object):
         """
         data = {'description': description or '',
                 'customProperties': custom_properties or {}}
-        resp = self._put('{0}/{1}/{2}'.format(self._api_endpoint,
+        resp = self._put('{0}/{1}/{2}'.format(self._endpoint,
                                               self._TAG_ENDPOINT_SUFFIX,
                                               tag_name),
                          data=json.dumps(data), session=self._session,
@@ -313,7 +311,7 @@ class SignalFxRestClient(object):
         Args:
             tag_name (string): name of tag to delete
         """
-        resp = self._delete('{0}/{1}/{2}'.format(self._api_endpoint,
+        resp = self._delete('{0}/{1}/{2}'.format(self._endpoint,
                                                  self._TAG_ENDPOINT_SUFFIX,
                                                  tag_name),
                             session=self._session, **kwargs)
@@ -328,7 +326,7 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of the response
         """
-        resp = self._get('{0}/{1}'.format(self._api_endpoint,
+        resp = self._get('{0}/{1}'.format(self._endpoint,
                                           self._ORGANIZATION_ENDPOINT_SUFFIX),
                          session=self._session, **kwargs)
         resp.raise_for_status()
