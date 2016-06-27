@@ -32,7 +32,7 @@ class SSETransport(transport._SignalFlowTransport):
                 'Content-Type': 'text/plain',
                 'X-SF-Token': self._token
             },
-            'timeout': self._timeout,
+            'timeout': urllib3.Timeout(connect=self._timeout, read=None),
         }
 
         if urllib3.util.parse_url(self._endpoint).scheme == 'https':
