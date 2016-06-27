@@ -32,7 +32,6 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
 
         transport._SignalFlowTransport.__init__(self, token, ws_endpoint,
                                                 timeout)
-        WebSocketClient.__init__(self, self._endpoint, heartbeat_freq=None)
 
         self._server_time = None
         self._connected = False
@@ -106,6 +105,11 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def _send(self, request):
         with self._connection_cv:
             if not self._connected:
+                # Clear any previous error state before attempting to
+                # reconnect.
+                self._error = None
+                WebSocketClient.__init__(self, self._endpoint,
+                                         heartbeat_freq=None)
                 self.connect()
             while not self._connected and not self._error:
                 self._connection_cv.wait()
@@ -195,12 +199,23 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             datapoints.append({'tsId': tsId, 'value': value})
         return timestamp, datapoints
 
+    def unhandled_error(self, error):
+        """Handler called on unhandled errors (socket errors, OS errors, etc).
+        We don't need to do anything here as the socket will be closed, causing
+        the closed() handler to be called, in which we handle the path to
+        reconnection."""
+        # TODO(mpetazzoni): ws4py >= 0.3.5 only?
+        logging.debug('WebSocket error: %s; will reconnect.', error)
+
     def closed(self, code, reason=None):
         """Handler called when the WebSocket is closed. Status code 1000
         denotes a normal close; all others are errors."""
-        self._channels.clear()
         if code != 1000:
             self._error = errors.SignalFlowException(code, reason)
+            logging.info('Lost WebSocket connection with %s (%s).', self, code)
+            map(lambda c: c.offer(WebSocketComputationChannel.END_SENTINEL),
+                self._channels.values())
+        self._channels.clear()
         with self._connection_cv:
             self._connected = False
             self._connection_cv.notify()
