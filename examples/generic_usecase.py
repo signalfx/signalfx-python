@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('token', help='Your SignalFx API access token')
     options = parser.parse_args()
     client = signalfx.SignalFx()
-    ingest = client.Ingest(options.token)
+    ingest = client.ingest(options.token)
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     try:
