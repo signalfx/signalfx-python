@@ -30,10 +30,10 @@ class Computation(object):
         self._current_batch_count = 0
 
         # Kick it off.
-        self._execute()
+        self._stream = self._execute()
 
     def _execute(self):
-        self._stream = self._exec_fn(self._last_logical_ts)
+        return self._exec_fn(self._last_logical_ts)
 
     @property
     def id(self):
@@ -84,6 +84,7 @@ class Computation(object):
             except StopIteration:
                 if self._state < Computation.STATE_COMPLETED:
                     self._stream = self._execute()
+                    iterator = iter(self._stream)
                     continue
 
             if isinstance(message, messages.StreamStartMessage):
