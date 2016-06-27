@@ -56,4 +56,4 @@ class ComputationFailed(Exception):
         return self._errors
 
     def __str__(self):
-        return 'Computation failed ({0})'.format(', '.join(self._errors))
+        return 'Computation failed ({0})'.format(self._errors)
