@@ -44,9 +44,6 @@ import requests
 
 from constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
         DEFAULT_STREAM_ENDPOINT, DEFAULT_TIMEOUT
-import ingest
-import rest
-import signalflow
 
 
 __author__ = 'SignalFx, Inc'
@@ -90,6 +87,7 @@ class SignalFx(object):
 
     def rest(self, token, endpoint=None, timeout=None):
         """Obtain a metadata REST API client."""
+        import rest
         return rest.SignalFxRestClient(
             token=token,
             endpoint=endpoint or self._api_endpoint,
@@ -97,6 +95,7 @@ class SignalFx(object):
 
     def ingest(self, token, endpoint=None, timeout=None):
         """Obtain a datapoint and event ingest client."""
+        import ingest
         if ingest.sf_pbuf:
             client = ingest.ProtoBufSignalFxIngestClient
         else:
@@ -110,6 +109,7 @@ class SignalFx(object):
 
     def signalflow(self, token, endpoint=None, timeout=None):
         """Obtain a SignalFlow API client."""
+        import signalflow
         return signalflow.SignalFlowClient(
             token=token,
             endpoint=endpoint or self._stream_endpoint,
