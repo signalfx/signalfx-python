@@ -8,12 +8,13 @@ import Queue
 import requests
 import threading
 
-from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
+from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
         DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES
 from . import version
 
 try:
-    import generated_protocol_buffers.signal_fx_protocol_buffers_pb2 as sf_pbuf
+    from .generated_protocol_buffers \
+            import signal_fx_protocol_buffers_pb2 as sf_pbuf
 except ImportError:
     sf_pbuf = None
 
