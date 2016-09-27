@@ -126,6 +126,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def received_message(self, message):
         decoded = None
         if message.is_binary:
+            message.data = bytes(message.data)
             # Binary messages use a custom encoding format. First, unpack the
             # header with the encoding version, message type and channel name.
             # The rest of the encoding depends on the message type.
@@ -134,7 +135,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                     message.data[:20])
 
             decoded = {
-                'channel': channel
+                'channel': channel.decode('utf-8')
             }
 
             if mtype == 5:
@@ -148,7 +149,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             else:
                 logging.warn('Unsupported binary message type %s!', mtype)
         else:
-            decoded = json.loads(message.data)
+            decoded = json.loads(message.data.decode('utf-8'))
 
         if decoded:
             self._process_message(decoded)
@@ -193,8 +194,10 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         timestamp, count = struct.unpack('!qi', data[:12])
         datapoints = []
         for chunk in chunks(data[12:], 17):
-            vtype, = struct.unpack('!B', chunk[0])
-            tsId = base64.urlsafe_b64encode(chunk[1:9]).replace('=', '')
+            vtype, = struct.unpack('!B', chunk[0:1])
+            tsId = (base64.urlsafe_b64encode(chunk[1:9])
+                    .decode('utf-8')
+                    .replace('=', ''))
             value, = struct.unpack('!q' if vtype == 1 else '!d', chunk[9:])
             datapoints.append({'tsId': tsId, 'value': value})
         return timestamp, datapoints
