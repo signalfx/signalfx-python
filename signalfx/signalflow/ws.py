@@ -188,7 +188,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def _decode_databatch(self, data):
         def chunks(l, n):
             """Yield successive n-sized chunks from l."""
-            for i in xrange(0, len(l), n):
+            for i in range(0, len(l), n):
                 yield l[i:i+n]
 
         timestamp, count = struct.unpack('!qi', data[:12])
@@ -216,8 +216,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         if code != 1000:
             self._error = errors.SignalFlowException(code, reason)
             logging.info('Lost WebSocket connection with %s (%s).', self, code)
-            map(lambda c: c.offer(WebSocketComputationChannel.END_SENTINEL),
-                self._channels.values())
+            for c in self._channels.values():
+                c.offer(WebSocketComputationChannel.END_SENTINEL)
         self._channels.clear()
         with self._connection_cv:
             self._connected = False
