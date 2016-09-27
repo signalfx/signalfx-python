@@ -4,8 +4,8 @@ import collections
 import json
 import logging
 import pprint
-import Queue
 import requests
+from six.moves import queue
 import threading
 
 from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
@@ -49,7 +49,7 @@ class _BaseSignalFxIngestClient(object):
 
         self._extra_dimensions = {}
 
-        self._queue = Queue.Queue()
+        self._queue = queue.Queue()
         self._thread_running = False
         self._lock = threading.Lock()
 
