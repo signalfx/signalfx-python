@@ -42,7 +42,7 @@ in-depth examples.
 import logging
 import requests
 
-from constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
+from .constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
         DEFAULT_STREAM_ENDPOINT, DEFAULT_TIMEOUT
 
 
@@ -87,7 +87,7 @@ class SignalFx(object):
 
     def rest(self, token, endpoint=None, timeout=None):
         """Obtain a metadata REST API client."""
-        import rest
+        from . import rest
         return rest.SignalFxRestClient(
             token=token,
             endpoint=endpoint or self._api_endpoint,
@@ -95,7 +95,7 @@ class SignalFx(object):
 
     def ingest(self, token, endpoint=None, timeout=None):
         """Obtain a datapoint and event ingest client."""
-        import ingest
+        from . import ingest
         if ingest.sf_pbuf:
             client = ingest.ProtoBufSignalFxIngestClient
         else:
@@ -109,7 +109,7 @@ class SignalFx(object):
 
     def signalflow(self, token, endpoint=None, timeout=None):
         """Obtain a SignalFlow API client."""
-        import signalflow
+        from . import signalflow
         return signalflow.SignalFlowClient(
             token=token,
             endpoint=endpoint or self._stream_endpoint,

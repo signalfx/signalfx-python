@@ -38,3 +38,6 @@ class _Channel(object):
 
     def next(self):
         return self._next()
+
+    def __next__(self):
+        return self._next()

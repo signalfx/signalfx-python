@@ -4,16 +4,17 @@ import collections
 import json
 import logging
 import pprint
-import Queue
 import requests
+from six.moves import queue
 import threading
 
-from constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
+from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
         DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES
 from . import version
 
 try:
-    import generated_protocol_buffers.signal_fx_protocol_buffers_pb2 as sf_pbuf
+    from .generated_protocol_buffers \
+            import signal_fx_protocol_buffers_pb2 as sf_pbuf
 except ImportError:
     sf_pbuf = None
 
@@ -48,7 +49,7 @@ class _BaseSignalFxIngestClient(object):
 
         self._extra_dimensions = {}
 
-        self._queue = Queue.Queue()
+        self._queue = queue.Queue()
         self._thread_running = False
         self._lock = threading.Lock()
 
