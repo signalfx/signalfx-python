@@ -1,8 +1,11 @@
-*.dist/
-*.build/
 *.pyc
+
+/.tox/
+/build/
+/dist/
+/*.egg-info/
+
+# IDE files
+.project/
 .ropeproject/
-*.egg-info/
 .idea/
-build/
-dist/
