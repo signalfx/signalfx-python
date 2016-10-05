@@ -2,13 +2,13 @@
 
 This file documents important changes to the SignalFx Python client library.
 
-- [[1.0.6] - 2016-09-29: More Python 3 compatibility](#106---2016-09-29-more-python-3-compatibility)
+- [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
-#### [1.0.6] - 2016-09-29: More Python 3 compatibility
+#### [1.0.7] - 2016-10-05: More Python 3 compatibility
 
-Version 1.0.6 includes an updated version of the generated
+Version 1.0.7 includes an updated version of the generated
 ProtocolBuffer code, generated with version 3 of the Protocol Buffer
 compiler and library, which produces Python 3 compatible Python source
 code.
