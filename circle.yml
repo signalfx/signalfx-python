@@ -1,21 +1,4 @@
-machine:
-  python:
-    version: 2.7.9
-
 dependencies:
   pre:
-    - pip install --upgrade pip
-    - pip install --upgrade flake8 setuptools flake8 pytest mock funcsigs
-    - pip install -r requirements.txt
-    - pip uninstall -y signalfx || true
-    - pip install .
-
-test:
-  pre:
-    - flake8 signalfx/*.py
-    - flake8 signalfx/signalflow/*.py
-    - flake8 signalfx/pyformance/*.py
-    - flake8 examples/*.py
-  override:
-    - python tests/test_data_reporting.py
-    - python tests/live_tests.py --metric_name 'MET' --tag_name 'TG' --key 'K' --value 'V'
+    - pip install --upgrade pip tox tox-pyenv
+    - pyenv local 2.7.9 3.4.2

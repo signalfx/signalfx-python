@@ -118,7 +118,7 @@ class _BaseSignalFxIngestClient(object):
         }
         logging.debug('Sending datapoints to SignalFx: %s', data)
 
-        for metric_type, datapoints in data.iteritems():
+        for metric_type, datapoints in data.items():
             if not datapoints:
                 continue
             if not isinstance(datapoints, list):
@@ -338,7 +338,8 @@ class JsonSignalFxIngestClient(_BaseSignalFxIngestClient):
     def _batch_data(self, datapoints_list):
         datapoints = collections.defaultdict(list)
         for item in datapoints_list:
-            datapoints[item.keys()[0]].append(item[item.keys()[0]])
+            item_keys = list(item.keys())
+            datapoints[item_keys[0]].append(item[item_keys[0]])
         return json.dumps(datapoints)
 
     def _send_event(self, event_data=None, url=None, session=None):
