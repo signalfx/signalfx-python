@@ -2,9 +2,24 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.8] - 2016-10-20: A missing field from events](#108---2016-10-20-a-missing-field-from-events)
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.0.8] - 2016-10-20: A missing field from events
+
+Version 1.0.8 is a small point release to expose the EventTimeSeries ID
+from events received from a SignalFlow v2 computation. This field can
+then be used to lookup the metadata of that EventTimeSeries from the
+computation.
+
+```python
+c = flow.execute(program)
+for msg in c.stream():
+    if isinstance(msg, signalfx.signalflow.messages.EventMessage):
+        pprint.pprint(c.get_metadata(msg.tsid))
+```
 
 #### [1.0.7] - 2016-10-05: More Python 3 compatibility
 
