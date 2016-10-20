@@ -162,9 +162,15 @@ class EventMessage(StreamMessage):
     """Message received when the computation has generated an event or alert
     from a detect block."""
 
-    def __init__(self, timestamp_ms, properties):
+    def __init__(self, tsid, timestamp_ms, properties):
+        self._tsid = tsid
         self._timestamp_ms = timestamp_ms
         self._properties = properties
+
+    @property
+    def tsid(self):
+        """The event timeseries ID."""
+        return self._tsid
 
     @property
     def timestamp_ms(self):
@@ -180,7 +186,9 @@ class EventMessage(StreamMessage):
 
     @staticmethod
     def decode(payload):
-        return EventMessage(payload['timestampMs'], payload['properties'])
+        return EventMessage(payload['tsId'],
+                            payload['timestampMs'],
+                            payload['properties'])
 
 
 class MetadataMessage(StreamMessage):
