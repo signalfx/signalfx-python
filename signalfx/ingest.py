@@ -190,7 +190,7 @@ class _BaseSignalFxIngestClient(object):
 
     def _send(self):
         try:
-            while self._thread_running:
+            while self._thread_running or not self._queue.empty():
                 tmp_dp = self._queue.get(True)
                 if tmp_dp == _BaseSignalFxIngestClient._QUEUE_STOP:
                     break
