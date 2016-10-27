@@ -2,17 +2,24 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.9] - 2016-10-26: Datapoints queue draining fix](#109---2016-10-26-datapoints-queue-draining-fix)
 - [[1.0.8] - 2016-10-20: A missing field from events](#108---2016-10-20-a-missing-field-from-events)
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
+#### [1.0.9] - 2016-10-26: Datapoints queue draining fix
+
+In certain situations, it was possible for the ingest client to stop and let the
+program exit before the datapoints queue was fully drained to SignalFx. This
+release fixes this and ensures that the background sending thread does not
+prematurely exits before the queue is fully drained.
+
 #### [1.0.8] - 2016-10-20: A missing field from events
 
-Version 1.0.8 is a small point release to expose the EventTimeSeries ID
-from events received from a SignalFlow v2 computation. This field can
-then be used to lookup the metadata of that EventTimeSeries from the
-computation.
+Version 1.0.8 is a small point release to expose the EventTimeSeries ID from
+events received from a SignalFlow v2 computation. This field can then be used to
+lookup the metadata of that EventTimeSeries from the computation.
 
 ```python
 c = flow.execute(program)
@@ -23,10 +30,9 @@ for msg in c.stream():
 
 #### [1.0.7] - 2016-10-05: More Python 3 compatibility
 
-Version 1.0.7 includes an updated version of the generated
-ProtocolBuffer code, generated with version 3 of the Protocol Buffer
-compiler and library, which produces Python 3 compatible Python source
-code.
+Version 1.0.7 includes an updated version of the generated ProtocolBuffer code,
+generated with version 3 of the Protocol Buffer compiler and library, which
+produces Python 3 compatible Python source code.
 
 #### [1.0.5] - 2016-09-29: Python 3 compatibility
 
