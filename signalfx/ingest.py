@@ -276,6 +276,8 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
             prop.value.intValue = value
         elif isinstance(value, str):
             prop.value.strValue = value
+        elif isinstance(value, unicode):
+            prop.value.strValue = value
         elif isinstance(value, float):
             prop.value.doubleValue = value
         elif isinstance(value, bool):
@@ -287,6 +289,8 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
         if isinstance(value, int):
             pbuf_dp.value.intValue = value
         elif isinstance(value, str):
+            pbuf_dp.value.strValue = value
+        elif isinstance(value, unicode):
             pbuf_dp.value.strValue = value
         elif isinstance(value, float):
             pbuf_dp.value.doubleValue = value
