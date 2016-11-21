@@ -2,12 +2,17 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.11]- 2016-11-22: Long values support](#1011---2016-11-22-long-values-support)
 - [[1.0.10]- 2016-11-21: Unicode event properties fix](#1010---2016-11-21-unicode-event-properties-fix)
 - [[1.0.9] - 2016-10-26: Datapoints queue draining fix](#109---2016-10-26-datapoints-queue-draining-fix)
 - [[1.0.8] - 2016-10-20: A missing field from events](#108---2016-10-20-a-missing-field-from-events)
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.0.11] - 2016-11-21: Long value support
+long type metric values were previously unsupported.  This release
+allows long values less than or equal to 9223372036854775807.
 
 #### [1.0.10] - 2016-11-21: Unicode event properties fix
 Unicode strings were previously unsupported for event properties.  This release
