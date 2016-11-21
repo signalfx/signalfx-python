@@ -7,6 +7,10 @@ DEFAULT_STREAM_ENDPOINT = 'https://stream.signalfx.com'
 DEFAULT_BATCH_SIZE = 300  # Will wait for this many requests before posting
 DEFAULT_TIMEOUT = 1
 
+# Integer Boundaries
+INTEGER_MAX = (2**63)-1
+INTEGER_MIN = -(2**63)
+
 # Global Parameters
 SUPPORTED_EVENT_CATEGORIES = [
     'ALERT',

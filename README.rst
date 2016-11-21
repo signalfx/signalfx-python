@@ -332,3 +332,12 @@ Root Cause: SignalFx's API endpoints (``api.signalfx.com``,
 the ``urllib3`` module in Python versions prior to 2.7.8 had a bug that causes
 the above issue. This was fixed in later versions of Python; we recommend using
 Python 2.7.9 or newer when using this library.
+
+Exceeding int64 integer sizes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The protocol buffer used to transmit data through the ingest API restricts 
+integers and longs to (``-(2**63)`` to ``(2**63)-1``).  ``long`` values in Python 2.x and 
+``int`` values in 3.x can exceed these values.  Any value or property value less 
+than ``-(2**63)`` or greater than ``(2**63)-1`` will raise a 
+``ValueError`` exception.
