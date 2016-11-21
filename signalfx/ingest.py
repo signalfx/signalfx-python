@@ -274,12 +274,18 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
     def _assign_property_value(self, prop, value):
         if isinstance(value, int):
             prop.value.intValue = value
+        elif isinstance(value, long):
+            if value > 9223372036854775807:
+                raise ValueError('Invalid Value ' + str(value) +
+                                 ' exceeds maximum signed 64 bit integer' +
+                                 ' (9223372036854775807)')
+            prop.value.intValue = value
+        elif isinstance(value, float):
+            prop.value.doubleValue = value
         elif isinstance(value, str):
             prop.value.strValue = value
         elif isinstance(value, unicode):
             prop.value.strValue = value
-        elif isinstance(value, float):
-            prop.value.doubleValue = value
         elif isinstance(value, bool):
             prop.value.boolValue = value
         else:
@@ -288,12 +294,18 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
     def _assign_value_type(self, pbuf_dp, value):
         if isinstance(value, int):
             pbuf_dp.value.intValue = value
+        elif isinstance(value, long):
+            if value > 9223372036854775807:
+                raise ValueError('Invalid Value ' + str(value) +
+                                 ' exceeds maximum signed 64 bit integer' +
+                                 ' (9223372036854775807)')
+            pbuf_dp.value.intValue = value
+        elif isinstance(value, float):
+            pbuf_dp.value.doubleValue = value
         elif isinstance(value, str):
             pbuf_dp.value.strValue = value
         elif isinstance(value, unicode):
             pbuf_dp.value.strValue = value
-        elif isinstance(value, float):
-            pbuf_dp.value.doubleValue = value
         else:
             raise ValueError('Invalid Value ' + str(value))
 
