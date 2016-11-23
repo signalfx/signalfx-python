@@ -5,11 +5,13 @@ import json
 import logging
 import pprint
 import requests
+import six
 from six.moves import queue
 import threading
 
 from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
-        DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES
+        DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES, INTEGER_MAX, \
+        INTEGER_MIN
 from . import version
 
 try:
@@ -244,7 +246,7 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
 
     def _add_to_queue(self, metric_type, datapoint):
         pbuf_dp = sf_pbuf.DataPoint()
-        self._assign_value_type(pbuf_dp, datapoint['value'])
+        self._assign_value(pbuf_dp, datapoint['value'])
         pbuf_dp.metricType = getattr(sf_pbuf, metric_type.upper())
         pbuf_dp.metric = datapoint['metric']
         if datapoint.get('timestamp'):
@@ -271,31 +273,39 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
             prop.key = key
             self._assign_property_value(prop, value)
 
-    def _assign_property_value(self, prop, value):
-        if isinstance(value, int):
-            prop.value.intValue = value
-        elif isinstance(value, str):
-            prop.value.strValue = value
-        elif isinstance(value, unicode):
-            prop.value.strValue = value
-        elif isinstance(value, float):
-            prop.value.doubleValue = value
-        elif isinstance(value, bool):
-            prop.value.boolValue = value
+    def _assign_value_by_type(self, pbuf_obj, value, _bool=True, _float=True,
+                              _integer=True, _string=True, error_prefix=''):
+        """Assigns the supplied value to the appropriate protobuf value type"""
+        # bool inherits int, so bool instance check must be executed prior to
+        # checking for integer types
+        if isinstance(value, bool) and _bool is True:
+            pbuf_obj.value.boolValue = value
+        elif isinstance(value, six.integer_types) and \
+                not isinstance(value, bool) and _integer is True:
+            if value < INTEGER_MIN or value > INTEGER_MAX:
+                raise ValueError(error_prefix + str(value) +
+                                 + ' exceeds signed 64 bit '
+                                 + 'integer range as defined by '
+                                 + 'protobuf (' + str(INTEGER_MIN) + ' to '
+                                 + str(INTEGER_MAX) + ')')
+            pbuf_obj.value.intValue = value
+        elif isinstance(value, float) and _float is True:
+            pbuf_obj.value.doubleValue = value
+        elif isinstance(value, six.string_types) and _string is True:
+            pbuf_obj.value.strValue = value
         else:
-            raise ValueError('Invalid Value ' + str(value))
+            raise ValueError(error_prefix + str(value)
+                             + ' is invalid type ' + str(type(value)))
 
-    def _assign_value_type(self, pbuf_dp, value):
-        if isinstance(value, int):
-            pbuf_dp.value.intValue = value
-        elif isinstance(value, str):
-            pbuf_dp.value.strValue = value
-        elif isinstance(value, unicode):
-            pbuf_dp.value.strValue = value
-        elif isinstance(value, float):
-            pbuf_dp.value.doubleValue = value
-        else:
-            raise ValueError('Invalid Value ' + str(value))
+    def _assign_property_value(self, prop, value):
+        """Assigns a property value to the protobuf obj property"""
+        self._assign_value_by_type(prop, value,
+                                   error_prefix='Invalid property value ')
+
+    def _assign_value(self, pbuf_dp, value):
+        """Assigns a value to the protobuf obj"""
+        self._assign_value_by_type(pbuf_dp, value, _bool=False,
+                                   error_prefix='Invalid value ')
 
     def _batch_data(self, datapoints_list):
         dpum = sf_pbuf.DataPointUploadMessage()
