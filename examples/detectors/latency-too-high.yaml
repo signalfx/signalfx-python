@@ -1,0 +1,13 @@
+---
+name: Demo latency is too high
+description: Fires when the latency of demo endpoints is too high for 5 seconds
+rules:
+  latency too high:
+    severity: Critical
+    description: Latency over 220ms for too long
+    notifications:
+      - type: Email
+        email: max@signalfx.com
+---
+
+detect(when(data('demo.trans.latency').mean() > 220, lasting='5s')).publish('latency too high')
