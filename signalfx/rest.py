@@ -1,6 +1,5 @@
 # Copyright (C) 2016 SignalFx, Inc. All rights reserved.
 
-import json
 import logging
 import pprint
 import requests
@@ -17,6 +16,7 @@ class SignalFxRestClient(object):
 
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
+    _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
     _MTS_ENDPOINT_SUFFIX = 'v2/metrictimeseries'
     _TAG_ENDPOINT_SUFFIX = 'v2/tag'
     _ORGANIZATION_ENDPOINT_SUFFIX = 'v2/organization'
@@ -34,11 +34,15 @@ class SignalFxRestClient(object):
             'User-Agent': '{0}/{1}'.format(version.name, version.version),
         })
 
-    def _get(self, url, session=None, timeout=None):
+    def _u(self, *args):
+        return '{0}/{1}'.format(self._endpoint, '/'.join(args))
+
+    def _get(self, url, params=None, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('url being gotten: %s', pprint.pformat(url))
-        response = session.get(url, timeout=timeout)
+        logging.debug('URL being retrieved: %s (params: %s)',
+                      pprint.pformat(url), params)
+        response = session.get(url, timeout=timeout, params=params)
         logging.debug('Getting from SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
@@ -48,8 +52,18 @@ class SignalFxRestClient(object):
         session = session or self._session
         timeout = timeout or self._timeout
         logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
-        response = session.put(url, data=data, timeout=timeout)
+        response = session.put(url, json=data, timeout=timeout)
         logging.debug('Putting to SignalFx %s (%d %s)',
+                      'succeeded' if response.ok else 'failed',
+                      response.status_code, response.text)
+        return response
+
+    def _post(self, url, data, session=None, timeout=None):
+        session = session or self._session
+        timeout = timeout or self._timeout
+        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        response = session.post(url, json=data, timeout=timeout)
+        logging.debug('Posting to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -85,9 +99,7 @@ class SignalFxRestClient(object):
         """
         logging.debug('Performing an elasticsearch for %(qry)s at %(pt)s',
                       {'qry': query, 'pt': metadata_endpoint})
-        url_to_get = '{0}/{1}?query={2}'.format(self._endpoint,
-                                                metadata_endpoint,
-                                                query)
+        url_to_get = '{0}?query={1}'.format(self._u(metadata_endpoint), query)
         if order_by is not None:
             url_to_get += '&orderBy=' + order_by
         # for offset and limit, use API defaults (by leaving them out of url)
@@ -100,20 +112,19 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         return resp.json()
 
-    def _get_object_by_name(self, object_name, object_endpoint, timeout=None):
+    def _get_object_by_name(self, object_endpoint, object_name, timeout=None):
         """
         generic function to get object (metadata, tag, ) by name from SignalFx.
 
         Args:
-            object_name (string): name of the object (e.g. 'jvm.cpu.load')
             object_endpoint (string): API endpoint suffix (e.g. 'v2/tag')
+            object_name (string): name of the object (e.g. 'jvm.cpu.load')
 
         Returns:
             dictionary of response
         """
         timeout = timeout or self._timeout
-        resp = self._get('{0}/{1}/{2}'.format(self._endpoint,
-                                              object_endpoint, object_name),
+        resp = self._get(self._u(object_endpoint, object_name),
                          session=self._session, timeout=timeout)
         resp.raise_for_status()
         return resp.json()
@@ -145,8 +156,8 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of response
         """
-        return self._get_object_by_name(metric_name,
-                                        self._METRIC_ENDPOINT_SUFFIX,
+        return self._get_object_by_name(self._METRIC_ENDPOINT_SUFFIX,
+                                        metric_name,
                                         **kwargs)
 
     def update_metric_by_name(self, metric_name, metric_type, description=None,
@@ -167,11 +178,9 @@ class SignalFxRestClient(object):
                 'description': description or '',
                 'customProperties': custom_properties or {},
                 'tags': tags or []}
-        resp = self._put('{0}/{1}/{2}'.format(self._endpoint,
-                                              self._METRIC_ENDPOINT_SUFFIX,
-                                              str(metric_name)),
-                         data=json.dumps(data), session=self._session,
-                         **kwargs)
+        resp = self._put(self._u(self._METRIC_ENDPOINT_SUFFIX,
+                                 str(metric_name)),
+                         data=data, **kwargs)
         resp.raise_for_status()
         return resp.json()
 
@@ -203,8 +212,8 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of response
         """
-        return self._get_object_by_name('{0}/{1}'.format(key, value),
-                                        self._DIMENSION_ENDPOINT_SUFFIX,
+        return self._get_object_by_name(self._DIMENSION_ENDPOINT_SUFFIX,
+                                        '{0}/{1}'.format(key, value),
                                         **kwargs)
 
     def update_dimension(self, key, value, description=None,
@@ -224,10 +233,8 @@ class SignalFxRestClient(object):
                 'tags': tags or [],
                 'key': key,
                 'value': value}
-        resp = self._put('{0}/{1}/{2}/{3}'.format(
-            self._endpoint, self._DIMENSION_ENDPOINT_SUFFIX, key, value),
-                         data=json.dumps(data), session=self._session,
-                         **kwargs)
+        resp = self._put(self._u(self._DIMENSION_ENDPOINT_SUFFIX, key, value),
+                         data=data, **kwargs)
         resp.raise_for_status()
         return resp.json()
 
@@ -251,8 +258,8 @@ class SignalFxRestClient(object):
 
     def get_metric_time_series(self, mts_id, **kwargs):
         """get a metric time series by id"""
-        return self._get_object_by_name(mts_id,
-                                        self._MTS_ENDPOINT_SUFFIX,
+        return self._get_object_by_name(self._MTS_ENDPOINT_SUFFIX,
+                                        mts_id,
                                         **kwargs)
 
     # functionality related to tags
@@ -283,7 +290,8 @@ class SignalFxRestClient(object):
             dictionary of the response
 
         """
-        return self._get_object_by_name(tag_name, self._TAG_ENDPOINT_SUFFIX,
+        return self._get_object_by_name(self._TAG_ENDPOINT_SUFFIX,
+                                        tag_name,
                                         **kwargs)
 
     def update_tag(self, tag_name, description=None,
@@ -297,11 +305,8 @@ class SignalFxRestClient(object):
         """
         data = {'description': description or '',
                 'customProperties': custom_properties or {}}
-        resp = self._put('{0}/{1}/{2}'.format(self._endpoint,
-                                              self._TAG_ENDPOINT_SUFFIX,
-                                              tag_name),
-                         data=json.dumps(data), session=self._session,
-                         **kwargs)
+        resp = self._put(self._u(self._TAG_ENDPOINT_SUFFIX, tag_name),
+                         data=data, **kwargs)
         resp.raise_for_status()
         return resp.json()
 
@@ -311,10 +316,8 @@ class SignalFxRestClient(object):
         Args:
             tag_name (string): name of tag to delete
         """
-        resp = self._delete('{0}/{1}/{2}'.format(self._endpoint,
-                                                 self._TAG_ENDPOINT_SUFFIX,
-                                                 tag_name),
-                            session=self._session, **kwargs)
+        resp = self._delete(self._u(self._TAG_ENDPOINT_SUFFIX, tag_name),
+                            **kwargs)
         resp.raise_for_status()
         # successful delete returns 204, which has no associated json
         return resp
@@ -326,8 +329,63 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of the response
         """
-        resp = self._get('{0}/{1}'.format(self._endpoint,
-                                          self._ORGANIZATION_ENDPOINT_SUFFIX),
-                         session=self._session, **kwargs)
+        resp = self._get(self._u(self._ORGANIZATION_ENDPOINT_SUFFIX),
+                         **kwargs)
         resp.raise_for_status()
         return resp.json()
+
+    # functionality related to detectors
+    def get_detectors(self, offset=0, limit=100, **kwargs):
+        detectors = []
+        while True:
+            resp = self._get(self._u(self._DETECTOR_ENDPOINT_SUFFIX),
+                             params={'offset': offset, 'limit': limit},
+                             **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            detectors += data['results']
+            if len(detectors) == data['count']:
+                break
+            offset = len(detectors)
+        return detectors
+
+    def create_detector(self, detector):
+        """Creates a new detector.
+
+        Args:
+            detector (object): the detector model object. Will be serialized as
+                JSON.
+        Returns:
+            dictionary of the response (created detector model).
+        """
+        resp = self._post(self._u(self._DETECTOR_ENDPOINT_SUFFIX),
+                          data=detector)
+        resp.raise_for_status()
+        return resp.json()
+
+    def update_detector(self, detector_id, detector):
+        """Update an existing detector.
+
+        Args:
+            detector_id (string): the ID of the detector.
+            detector (object): the detector model object. Will be serialized as
+                JSON.
+        Returns:
+            dictionary of the response (updated detector model).
+        """
+        resp = self._put(self._u(self._DETECTOR_ENDPOINT_SUFFIX, detector_id),
+                         data=detector)
+        resp.raise_for_status()
+        return resp.json()
+
+    def delete_detector(self, detector_id):
+        """Remove a detector.
+
+        Args:
+            detector_id (string): the ID of the detector.
+        """
+        resp = self._delete(self._u(self._DETECTOR_ENDPOINT_SUFFIX,
+                                    detector_id))
+        resp.raise_for_status()
+        # successful delete returns 204, which has no response json
+        return resp
