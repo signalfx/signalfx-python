@@ -11,6 +11,8 @@ from ws4py.client.threadedclient import WebSocketClient
 from . import channel, errors, messages, transport
 from .. import constants
 
+_logger = logging.getLogger(__name__)
+
 
 class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     """WebSocket based transport.
@@ -147,7 +149,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                     'data': data
                 })
             else:
-                logging.warn('Unsupported binary message type %s!', mtype)
+                _logger.warn('Unsupported binary message type %s!', mtype)
         else:
             decoded = json.loads(message.data.decode('utf-8'))
 
@@ -166,7 +168,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             with self._connection_cv:
                 self._connected = True
                 self._connection_cv.notify()
-            logging.debug('WebSocket connection authenticated as %s (in %s)',
+            _logger.debug('WebSocket connection authenticated as %s (in %s)',
                           message.get('userId'), message.get('orgId'))
             return
 
@@ -208,14 +210,14 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         the closed() handler to be called, in which we handle the path to
         reconnection."""
         # TODO(mpetazzoni): ws4py >= 0.3.5 only?
-        logging.debug('WebSocket error: %s; will reconnect.', error)
+        _logger.debug('WebSocket error: %s; will reconnect.', error)
 
     def closed(self, code, reason=None):
         """Handler called when the WebSocket is closed. Status code 1000
         denotes a normal close; all others are errors."""
         if code != 1000:
             self._error = errors.SignalFlowException(code, reason)
-            logging.info('Lost WebSocket connection with %s (%s).', self, code)
+            _logger.info('Lost WebSocket connection with %s (%s).', self, code)
             for c in self._channels.values():
                 c.offer(WebSocketComputationChannel.END_SENTINEL)
         self._channels.clear()

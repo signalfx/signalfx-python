@@ -10,6 +10,8 @@ from . import constants, version
 # object abstractions as the API itself, with functions to manipulate those,
 # instead of a disorderly bag of utility functions.
 
+_logger = logging.getLogger(__name__)
+
 
 class SignalFxRestClient(object):
     """SignalFx REST API client."""
@@ -40,10 +42,10 @@ class SignalFxRestClient(object):
     def _get(self, url, params=None, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('URL being retrieved: %s (params: %s)',
+        _logger.debug('URL being retrieved: %s (params: %s)',
                       pprint.pformat(url), params)
         response = session.get(url, timeout=timeout, params=params)
-        logging.debug('Getting from SignalFx %s (%d %s)',
+        _logger.debug('Getting from SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -51,9 +53,9 @@ class SignalFxRestClient(object):
     def _put(self, url, data, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
         response = session.put(url, json=data, timeout=timeout)
-        logging.debug('Putting to SignalFx %s (%d %s)',
+        _logger.debug('Putting to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -61,9 +63,9 @@ class SignalFxRestClient(object):
     def _post(self, url, data, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
         response = session.post(url, json=data, timeout=timeout)
-        logging.debug('Posting to SignalFx %s (%d %s)',
+        _logger.debug('Posting to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -71,10 +73,10 @@ class SignalFxRestClient(object):
     def _delete(self, url, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('url associated with delete request: %s',
+        _logger.debug('url associated with delete request: %s',
                       pprint.pformat(url))
         response = session.delete(url, timeout=timeout)
-        logging.debug('Deleting from SignalFx %s (%d %s)',
+        _logger.debug('Deleting from SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -97,7 +99,7 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of query result
         """
-        logging.debug('Performing an elasticsearch for %(qry)s at %(pt)s',
+        _logger.debug('Performing an elasticsearch for %(qry)s at %(pt)s',
                       {'qry': query, 'pt': metadata_endpoint})
         url_to_get = '{0}?query={1}'.format(self._u(metadata_endpoint), query)
         if order_by is not None:

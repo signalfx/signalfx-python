@@ -51,6 +51,8 @@ __email__ = 'support+python@signalfx.com'
 __copyright__ = 'Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.'
 __all__ = ['SignalFx']
 
+_logger = logging.getLogger(__name__)
+
 
 class SignalFx(object):
     """SignalFx client.
@@ -99,7 +101,7 @@ class SignalFx(object):
         if ingest.sf_pbuf:
             client = ingest.ProtoBufSignalFxIngestClient
         else:
-            logging.warn('Protocol Buffers not installed properly; '
+            _logger.warn('Protocol Buffers not installed properly; '
                          'falling back to JSON.')
             client = ingest.JsonSignalFxIngestClient
         return client(

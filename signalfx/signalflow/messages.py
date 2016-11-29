@@ -2,6 +2,8 @@
 
 import logging
 
+_logger = logging.getLogger(__name__)
+
 
 class StreamMessage(object):
     """Base class for stream messages received from a SignalFlow
@@ -21,7 +23,7 @@ class StreamMessage(object):
             return DataMessage.decode(payload)
         if mtype == 'error':
             return ErrorMessage.decode(payload)
-        logging.warn('Unsupported event type; ignoring %s: %s!',
+        _logger.warn('Unsupported event type; ignoring %s: %s!',
                      mtype, payload)
         return None
 
@@ -49,7 +51,7 @@ class ControlMessage(StreamMessage):
             return ChannelAbortMessage.decode(payload)
         if payload['event'] == 'END_OF_CHANNEL':
             return EndOfChannelMessage.decode(payload)
-        logging.warn('Unsupported control message %s; ignoring!',
+        _logger.warn('Unsupported control message %s; ignoring!',
                      payload['event'])
         return None
 

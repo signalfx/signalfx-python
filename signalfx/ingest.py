@@ -20,6 +20,8 @@ try:
 except ImportError:
     sf_pbuf = None
 
+_logger = logging.getLogger(__name__)
+
 
 class _BaseSignalFxIngestClient(object):
     """Base SignalFx ingest client.
@@ -118,7 +120,7 @@ class _BaseSignalFxIngestClient(object):
             'gauge': gauges,
             'counter': counters,
         }
-        logging.debug('Sending datapoints to SignalFx: %s', data)
+        _logger.debug('Sending datapoints to SignalFx: %s', data)
 
         for metric_type, datapoints in data.items():
             if not datapoints:
@@ -157,7 +159,7 @@ class _BaseSignalFxIngestClient(object):
             'timestamp': int(timestamp) if timestamp else None,
         }
 
-        logging.debug('Sending event to SignalFx: %s', data)
+        _logger.debug('Sending event to SignalFx: %s', data)
         self._add_extra_dimensions(data)
         return self._send_event(event_data=data, url='{0}/{1}'.format(
             self._endpoint, self._INGEST_ENDPOINT_EVENT_SUFFIX),
@@ -178,7 +180,7 @@ class _BaseSignalFxIngestClient(object):
                                              name=self._THREAD_NAME)
         self._send_thread.daemon = True
         self._send_thread.start()
-        logging.debug('Thread %s started', self._THREAD_NAME)
+        _logger.debug('Thread %s started', self._THREAD_NAME)
 
     def stop(self, msg='Thread stopped'):
         """Stop send thread and flush points for a safe exit."""
@@ -188,7 +190,7 @@ class _BaseSignalFxIngestClient(object):
             self._thread_running = False
         self._queue.put(_BaseSignalFxIngestClient._QUEUE_STOP)
         self._send_thread.join()
-        logging.debug(msg)
+        _logger.debug(msg)
 
     def _send(self):
         try:
@@ -208,7 +210,7 @@ class _BaseSignalFxIngestClient(object):
                                    self._endpoint,
                                    self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
                 except:
-                    logging.exception('Posting data to SignalFx failed.')
+                    _logger.exception('Posting data to SignalFx failed.')
         except KeyboardInterrupt:
             self.stop(msg='Thread stopped by keyboard interrupt.')
 
@@ -221,9 +223,9 @@ class _BaseSignalFxIngestClient(object):
     def _post(self, data, url, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        logging.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
         response = session.post(url, data=data, timeout=timeout)
-        logging.debug('Sending to SignalFx %s (%d %s)',
+        _logger.debug('Sending to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
 
@@ -283,29 +285,30 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
         elif isinstance(value, six.integer_types) and \
                 not isinstance(value, bool) and _integer is True:
             if value < INTEGER_MIN or value > INTEGER_MAX:
-                raise ValueError(error_prefix + str(value) +
-                                 + ' exceeds signed 64 bit '
-                                 + 'integer range as defined by '
-                                 + 'protobuf (' + str(INTEGER_MIN) + ' to '
-                                 + str(INTEGER_MAX) + ')')
+                raise ValueError(
+                        ('{}: {} exceeds signed 64 bit integer range '
+                         'as defined by ProtocolBuffers ({} to {})')
+                        .format(error_prefix, str(value),
+                                str(INTEGER_MIN), str(INTEGER_MAX)))
             pbuf_obj.value.intValue = value
         elif isinstance(value, float) and _float is True:
             pbuf_obj.value.doubleValue = value
         elif isinstance(value, six.string_types) and _string is True:
             pbuf_obj.value.strValue = value
         else:
-            raise ValueError(error_prefix + str(value)
-                             + ' is invalid type ' + str(type(value)))
+            raise ValueError(
+                    '{}: {} is of invalid type {}'
+                    .format(error_prefix, str(value), str(type(value))))
 
     def _assign_property_value(self, prop, value):
         """Assigns a property value to the protobuf obj property"""
         self._assign_value_by_type(prop, value,
-                                   error_prefix='Invalid property value ')
+                                   error_prefix='Invalid property value')
 
     def _assign_value(self, pbuf_dp, value):
         """Assigns a value to the protobuf obj"""
         self._assign_value_by_type(pbuf_dp, value, _bool=False,
-                                   error_prefix='Invalid value ')
+                                   error_prefix='Invalid value')
 
     def _batch_data(self, datapoints_list):
         dpum = sf_pbuf.DataPointUploadMessage()
