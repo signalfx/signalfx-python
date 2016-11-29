@@ -31,6 +31,8 @@ AWS_ID_DIMENSION = 'AWSUniqueId'
 AWS_ID_URL = 'http://169.254.169.254/latest/dynamic/instance-identity/document'
 DEFAULT_AWS_TIMEOUT = 1  # Timeout to connect to the AWS metadata service
 
+_logger = logging.getLogger(__name__)
+
 
 def get_aws_unique_id(timeout=DEFAULT_AWS_TIMEOUT):
     """Determine the current AWS unique ID
@@ -41,11 +43,11 @@ def get_aws_unique_id(timeout=DEFAULT_AWS_TIMEOUT):
     try:
         resp = requests.get(AWS_ID_URL, timeout=timeout).json()
     except requests.exceptions.ConnectTimeout:
-        logging.warning("Connection timeout when determining AWS unique "
-                        "ID. Not using AWS unique ID.")
+        _logger.warning('Connection timeout when determining AWS unique '
+                        'ID. Not using AWS unique ID.')
         return None
     else:
         aws_id = "{0}_{1}_{2}".format(resp['instanceId'], resp['region'],
                                       resp['accountId'])
-        logging.debug("Using AWS unique ID %s", aws_id)
+        _logger.debug('Using AWS unique ID %s.', aws_id)
         return aws_id
