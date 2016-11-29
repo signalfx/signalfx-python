@@ -335,12 +335,20 @@ class SignalFxRestClient(object):
         return resp.json()
 
     # functionality related to detectors
-    def get_detectors(self, offset=0, limit=100, **kwargs):
+    def get_detectors(self, name=None, batch_size=100, **kwargs):
+        """Retrieve all (v2) detectors matching the given name; all (v2)
+        detectors otherwise.
+
+        Note that this method will loop through the paging of the results and
+        accumulate all detectors that match the query. This may be expensive.
+        """
         detectors = []
+        offset = 0
         while True:
-            resp = self._get(self._u(self._DETECTOR_ENDPOINT_SUFFIX),
-                             params={'offset': offset, 'limit': limit},
-                             **kwargs)
+            resp = self._get(
+                self._u(self._DETECTOR_ENDPOINT_SUFFIX),
+                params={'offset': offset, 'limit': batch_size, 'name': name},
+                **kwargs)
             resp.raise_for_status()
             data = resp.json()
             detectors += data['results']
