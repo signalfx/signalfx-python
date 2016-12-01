@@ -109,11 +109,16 @@ class Computation(object):
                 self._state = Computation.STATE_COMPLETED
                 continue
 
-            # Intercept metadata messages to accumulate received metadata.
-            # TODO(mpetazzoni): this can accumulate metadata without bounds if
-            # a computation has a high rate of member churn.
+            # Intercept metadata messages to accumulate received metadata...
             if isinstance(message, messages.MetadataMessage):
                 self._metadata[message.tsid] = message.properties
+                yield message
+                continue
+
+            # ...as well as expired-tsid messages to clean it up.
+            if isinstance(message, messages.ExpiredTsIdMessage):
+                if message.tsid in self._metadata:
+                    del self._metadata[message.tsid]
                 yield message
                 continue
 
