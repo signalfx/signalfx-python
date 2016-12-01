@@ -19,6 +19,8 @@ class StreamMessage(object):
             return EventMessage.decode(payload)
         if mtype == 'metadata':
             return MetadataMessage.decode(payload)
+        if mtype == 'expired-tsid':
+            return ExpiredTsIdMessage.decode(payload)
         if mtype == 'data':
             return DataMessage.decode(payload)
         if mtype == 'error':
@@ -215,6 +217,25 @@ class MetadataMessage(StreamMessage):
     @staticmethod
     def decode(payload):
         return MetadataMessage(payload['tsId'], payload['properties'])
+
+
+class ExpiredTsIdMessage(StreamMessage):
+    """Message informing us that an output timeseries is no longer part of the
+    computation and that we may do some cleanup of whatever internal state we
+    have tied to that output timeseries."""
+
+    def __init__(self, tsid):
+        self._tsid = tsid
+
+    @property
+    def tsid(self):
+        """The identifier of the timeseries that's no longer interesting to the
+        computation."""
+        return self._tsid
+
+    @staticmethod
+    def decode(payload):
+        return ExpiredTsIdMessage(payload['tsId'])
 
 
 class DataMessage(StreamMessage):
