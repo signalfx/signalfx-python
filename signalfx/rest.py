@@ -361,6 +361,20 @@ class SignalFxRestClient(object):
             offset = len(detectors)
         return detectors
 
+    def validate_detector(self, detector):
+        """Validate a detector.
+
+        Validates the given detector; throws a 400 Bad Request HTTP error if
+        the detector is invalid; otherwise doesn't return or throw anything.
+
+        Args:
+            detector (object): the detector model object. Will be serialized as
+                JSON.
+        """
+        resp = self._post(self._u(self._DETECTOR_ENDPOINT_SUFFIX, 'validate'),
+                          data=detector)
+        resp.raise_for_status()
+
     def create_detector(self, detector):
         """Creates a new detector.
 
