@@ -42,10 +42,9 @@ class SignalFxRestClient(object):
     def _get(self, url, params=None, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        _logger.debug('URL being retrieved: %s (params: %s)',
-                      pprint.pformat(url), params)
+        _logger.debug('GET %s (params: %s)', url, params)
         response = session.get(url, timeout=timeout, params=params)
-        _logger.debug('Getting from SignalFx %s (%d %s)',
+        _logger.debug('Getting from SignalFx %s (%d): %s',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -53,9 +52,9 @@ class SignalFxRestClient(object):
     def _put(self, url, data, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        _logger.debug('PUT %s: %s', url, pprint.pformat(data))
         response = session.put(url, json=data, timeout=timeout)
-        _logger.debug('Putting to SignalFx %s (%d %s)',
+        _logger.debug('Putting to SignalFx %s (%d): %s',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
@@ -63,22 +62,25 @@ class SignalFxRestClient(object):
     def _post(self, url, data, session=None, timeout=None):
         session = session or self._session
         timeout = timeout or self._timeout
-        _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
+        _logger.debug('POST %s: %s', url, pprint.pformat(data))
         response = session.post(url, json=data, timeout=timeout)
-        _logger.debug('Posting to SignalFx %s (%d %s)',
+        _logger.debug('Posting to SignalFx %s (%d): %s',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
         return response
 
-    def _delete(self, url, session=None, timeout=None):
+    def _delete(self, url, session=None, timeout=None,
+                ignore_not_found=False):
         session = session or self._session
         timeout = timeout or self._timeout
-        _logger.debug('url associated with delete request: %s',
-                      pprint.pformat(url))
+        _logger.debug('DELETE %s', url)
         response = session.delete(url, timeout=timeout)
-        _logger.debug('Deleting from SignalFx %s (%d %s)',
+        _logger.debug('Deleting from SignalFx %s (%d)',
                       'succeeded' if response.ok else 'failed',
-                      response.status_code, response.text)
+                      response.status_code)
+        if response.status_code is requests.codes.not_found and \
+                ignore_not_found:
+            response.status_code = requests.codes.no_content
         return response
 
     def _search_metrics_and_metadata(self, metadata_endpoint, query,
@@ -337,7 +339,7 @@ class SignalFxRestClient(object):
         return resp.json()
 
     # functionality related to detectors
-    def get_detectors(self, name=None, batch_size=100, **kwargs):
+    def get_detectors(self, name=None, tags=None, batch_size=100, **kwargs):
         """Retrieve all (v2) detectors matching the given name; all (v2)
         detectors otherwise.
 
@@ -349,7 +351,12 @@ class SignalFxRestClient(object):
         while True:
             resp = self._get(
                 self._u(self._DETECTOR_ENDPOINT_SUFFIX),
-                params={'offset': offset, 'limit': batch_size, 'name': name},
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name,
+                    'tags': tags or [],
+                },
                 **kwargs)
             resp.raise_for_status()
             data = resp.json()
@@ -358,6 +365,20 @@ class SignalFxRestClient(object):
                 break
             offset = len(detectors)
         return detectors
+
+    def validate_detector(self, detector):
+        """Validate a detector.
+
+        Validates the given detector; throws a 400 Bad Request HTTP error if
+        the detector is invalid; otherwise doesn't return or throw anything.
+
+        Args:
+            detector (object): the detector model object. Will be serialized as
+                JSON.
+        """
+        resp = self._post(self._u(self._DETECTOR_ENDPOINT_SUFFIX, 'validate'),
+                          data=detector)
+        resp.raise_for_status()
 
     def create_detector(self, detector):
         """Creates a new detector.
@@ -388,14 +409,15 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         return resp.json()
 
-    def delete_detector(self, detector_id):
+    def delete_detector(self, detector_id, **kwargs):
         """Remove a detector.
 
         Args:
             detector_id (string): the ID of the detector.
         """
         resp = self._delete(self._u(self._DETECTOR_ENDPOINT_SUFFIX,
-                                    detector_id))
+                                    detector_id),
+                            **kwargs)
         resp.raise_for_status()
         # successful delete returns 204, which has no response json
         return resp

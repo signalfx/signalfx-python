@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.13]- 2016-12-05: More features from detector APIs](#1013---2016-12-05-more-features-from-detector-apis)
 - [[1.0.12]- 2016-11-28: Detector APIs](#1012---2016-11-28-detector-apis)
 - [[1.0.11]- 2016-11-23: Long value support](#1011---2016-11-23-long-value-support)
 - [[1.0.10]- 2016-11-21: Unicode event properties fix](#1010---2016-11-21-unicode-event-properties-fix)
@@ -10,6 +11,16 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.0.13] - 2016-12-05: More features from detector APIs
+
+Added support for the `/v2/detector/validate` endpoint via
+`rest.validate_detector()`, and support for searching detectors by tags
+when using `rest.get_detectors()`.
+
+It is also now possible to pass `ignore_not_found=True` to REST delete
+operations to ignore failures on attempting to remove a non-existent
+resource for which the DELETE call would otherwise return a 404.
 
 #### [1.0.12] - 2016-11-28: Detector APIs
 
