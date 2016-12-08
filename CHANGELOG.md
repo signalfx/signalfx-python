@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.14]- 2016-12-07: SignalFlow client bug fixes and context managers](#1014---2016-12-07-signalflow-client-bug-fixes-and-context-managers)
 - [[1.0.13]- 2016-12-05: More features from detector APIs](#1013---2016-12-05-more-features-from-detector-apis)
 - [[1.0.12]- 2016-11-28: Detector APIs](#1012---2016-11-28-detector-apis)
 - [[1.0.11]- 2016-11-23: Long value support](#1011---2016-11-23-long-value-support)
@@ -11,6 +12,23 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.0.14] - 2016-12-07: SignalFlow client bug fixes and context managers
+
+Fixes a bug in the SignalFlow streaming computation client library that
+would lead to an incomplete first data batch returned from the
+computation stream when the program being executed as multiple published
+streams.
+
+All three sub-clients also now support Python context managers so they
+can be used in `with` blocks:
+
+```python
+with signalfx.SignalFx().signalflow('MY_TOKEN') as flow:
+    computation = flow.execute(program)
+    for msg in computation.stream():
+        # ...
+```
 
 #### [1.0.13] - 2016-12-05: More features from detector APIs
 
