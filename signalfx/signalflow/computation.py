@@ -140,15 +140,15 @@ class Computation(object):
                 if not self._current_batch_message:
                     self._current_batch_message = message
                     self._current_batch_count = 1
-                elif ((message.logical_timestamp_ms ==
-                       self._current_batch_message.logical_timestamp_ms) and
-                      (self._current_batch_count < self._expected_batches)):
+                elif (message.logical_timestamp_ms ==
+                        self._current_batch_message.logical_timestamp_ms):
                     self._current_batch_message.add_data(message.data)
                     self._current_batch_count += 1
                 else:
                     self._batch_count_detected = True
 
-                if self._current_batch_count == self._expected_batches:
+                if (self._batch_count_detected and
+                        self._current_batch_count == self._expected_batches):
                     yield self._get_batch_to_yield()
                 continue
 
@@ -171,8 +171,6 @@ class Computation(object):
             self._resolution = message['contents']['resolutionMs']
 
     def _get_batch_to_yield(self):
-        if not self._current_batch_message:
-            return None
         to_yield = self._current_batch_message
         self._current_batch_message = None
         self._current_batch_count = 0
