@@ -36,6 +36,12 @@ class SignalFxRestClient(object):
             'User-Agent': '{0}/{1}'.format(version.name, version.version),
         })
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._session.close()
+
     def _u(self, *args):
         return '{0}/{1}'.format(self._endpoint, '/'.join(args))
 
