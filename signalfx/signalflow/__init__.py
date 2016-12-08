@@ -19,10 +19,10 @@ class SignalFlowClient(object):
         self._transport = transport(token, endpoint, timeout)
         self._computations = set([])
 
-    def __exit__(self):
-        return self.close()
+    def __enter__(self):
+        return self
 
-    def __del__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         return self.close()
 
     def _get_params(self, **kwargs):

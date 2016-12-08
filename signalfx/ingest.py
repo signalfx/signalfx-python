@@ -67,6 +67,12 @@ class _BaseSignalFxIngestClient(object):
             'User-Agent': ' '.join(user_agent),
         })
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop()
+
     def _add_to_queue(self, metric_type, datapoint):
         raise NotImplementedError('Subclasses should implement this!')
 

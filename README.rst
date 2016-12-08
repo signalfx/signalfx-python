@@ -71,8 +71,7 @@ Basic usage of the library for reporting data goes as follows:
 
     import signalfx
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
-    try:
+    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
         sfx.send(
             gauges=[
               {'metric': 'myfunc.time',
@@ -92,9 +91,24 @@ Basic usage of the library for reporting data goes as follows:
                'timestamp': 1442960607000},
               ...
             ])
+
+If you're sending data from multiple places in your code, you should create
+your ingest client once and use it throughout your application. Each ingest
+client instance has an internal queue of datapoints and events that need to be
+sent to SignalFx, as well as an internal thread draining that queue. **When you
+no longer need the client instance, make sure you call ``.stop()`` on it to
+ensure the queue is fully drained.**
+
+.. code:: python
+
+    import signalfx
+
+    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+    try:
+        sfx.send(...)
+        sfx.send(...)
     finally:
-        # After all datapoints have been sent, flush any remaining messages
-        # in the send queue and terminate all connections.
+        # Make sure that everything gets sent.
         sfx.stop()
 
 The ``timestamp`` must be a millisecond precision timestamp; the number of
@@ -125,8 +139,7 @@ of string to string key/value pairs representing the dimensions:
 
     import signalfx
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
-    try:
+    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
         sfx.send(
             gauges=[
               {
@@ -137,8 +150,6 @@ of string to string key/value pairs representing the dimensions:
               },
               ...
             ], ...)
-    finally:
-        sfx.stop()
 
 See `examples/generic_usecase.py`_ for a complete code sample showing how to
 send data to SignalFx.
@@ -156,8 +167,7 @@ supplied as well.
 
     import signalfx
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
-    try:
+    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
         sfx.send_event(
             event_type='deployments',
             dimensions={
@@ -166,8 +176,6 @@ supplied as well.
                 'instance': 'myinstance'},
             properties={
                 'version': '2015.04.29-01'})
-    finally:
-        sfx.stop()
 
 Metric metadata and tags
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,10 +187,10 @@ metadata and tags. Deleting tags is also supported.
 
     import signalfx
 
-    sfx = signalfx.SignalFx().rest('MY_TOKEN')
-    sfx.update_tag('tag_name',
-                   description='An example tag',
-                   custom_properties={'version': 'some_number'})
+    with signalfx.SignalFx().rest('MY_TOKEN') as sfx:
+        sfx.update_tag('tag_name',
+                       description='An example tag',
+                       custom_properties={'version': 'some_number'})
 
 AWS integration
 ~~~~~~~~~~~~~~~
@@ -263,8 +271,7 @@ Executing a SignalFlow program is very simple with this client library:
     import signalfx
 
     program = "data('cpu.utilization').mean().publish()"
-    flow = signalfx.SignalFx().signalflow('MY_TOKEN')
-    try:
+    with signalfx.SignalFx().signalflow('MY_TOKEN') as flow:
         print('Executing {0} ...'.format(program))
         computation = flow.execute(program)
         for msg in computation.stream():
@@ -272,8 +279,6 @@ Executing a SignalFlow program is very simple with this client library:
                 print('{0}: {1}'.format(msg.logical_timestamp_ms, msg.data))
             if isinstance(msg, signalfx.signalflow.messages.EventMessage):
                 print('{0}: {1}'.format(msg.timestamp_ms, msg.properties))
-    finally:
-        flow.close()
 
 Metadata about the streamed timeseries is received from ``.stream()``, but it
 is automatically intercepted by the client library and made available through
@@ -336,8 +341,8 @@ Python 2.7.9 or newer when using this library.
 Exceeding int64 integer sizes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The protocol buffer used to transmit data through the ingest API restricts 
-integers and longs to (``-(2**63)`` to ``(2**63)-1``).  ``long`` values in Python 2.x and 
-``int`` values in 3.x can exceed these values.  Any value or property value less 
-than ``-(2**63)`` or greater than ``(2**63)-1`` will raise a 
-``ValueError`` exception.
+The protocol buffer used to transmit data through the ingest API restricts
+integers and longs to (``-(2**63)`` to ``(2**63)-1``).  ``long`` values in
+Python 2.x and ``int`` values in 3.x can exceed these values.  Any value or
+property value less than ``-(2**63)`` or greater than ``(2**63)-1`` will raise
+a ``ValueError`` exception.
