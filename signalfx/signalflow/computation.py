@@ -20,6 +20,7 @@ class Computation(object):
         self._stream = None
         self._state = Computation.STATE_UNKNOWN
         self._resolution = None
+        self._num_input_timeseries = 0
 
         self._metadata = {}
         self._last_logical_ts = None
@@ -42,6 +43,10 @@ class Computation(object):
     @property
     def resolution(self):
         return self._resolution
+
+    @property
+    def num_input_timeseries(self):
+        return self._num_input_timeseries
 
     @property
     def state(self):
@@ -169,6 +174,8 @@ class Computation(object):
         # it's present.
         if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
             self._resolution = message['contents']['resolutionMs']
+        elif message['messageCode'] == 'FETCH_NUM_TIMESERIES':
+            self._num_input_timeseries += int(message['numInputTimeSeries'])
 
     def _get_batch_to_yield(self):
         to_yield = self._current_batch_message
