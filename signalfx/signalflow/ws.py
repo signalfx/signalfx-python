@@ -128,33 +128,55 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def received_message(self, message):
         decoded = None
         if message.is_binary:
-            message.data = bytes(message.data)
-            # Binary messages use a custom encoding format. First, unpack the
-            # header with the encoding version, message type and channel name.
-            # The rest of the encoding depends on the message type.
-            version, mtype, channel = struct.unpack(
-                    '!BBxx16s',
-                    message.data[:20])
-
-            decoded = {
-                'channel': channel.decode('utf-8')
-            }
-
-            if mtype == 5:
-                # Decode data batch message
-                timestamp, data = self._decode_databatch(message.data[20:])
-                decoded.update({
-                    'type': 'data',
-                    'logicalTimestampMs': timestamp,
-                    'data': data
-                })
-            else:
-                _logger.warn('Unsupported binary message type %s!', mtype)
+            decoded = self.decode_binary_message(bytes(message.data))
         else:
             decoded = json.loads(message.data.decode('utf-8'))
 
         if decoded:
             self._process_message(decoded)
+
+    def decode_binary_message(self, data):
+        # Binary messages use a custom encoding format. First, unpack the
+        # leading version byte to determine how to unpack the rest.
+        version, = struct.unpack('!B', data[0:1])
+        if version == 1:
+            # v1 preamble
+            version, mtype, channel = struct.unpack('!BBxx16s', data[:20])
+            index = 20
+        elif version == 2:
+            # v2 preamble
+            version, mtype, channel = struct.unpack('!hBx16s', data[:20])
+            index = 20
+        else:
+            _logger.warn('Unsupported binary message version %s!',
+                         version)
+            return None
+
+        channel = ''.join(filter(lambda c: ord(c), channel.decode('utf-8')))
+
+        if mtype == 5:
+            # Decode data batch message
+            if version == 1:
+                timestamp, = struct.unpack('!q', data[index:index+8])
+                max_delay = None
+                index += 8
+            else:
+                timestamp, max_delay = struct.unpack(
+                        '!qq', data[index:index+16])
+                index += 16
+
+            # Parse out datapoints
+            datapoints = self._decode_datapoints(data[index:])
+            return {
+                'channel': channel,
+                'type': 'data',
+                'logicalTimestampMs': timestamp,
+                'maxDelayMs': max_delay,
+                'data': datapoints
+            }
+        else:
+            _logger.warn('Unsupported binary message type %s!', mtype)
+            return None
 
     def _process_message(self, message):
         # Intercept KEEP_ALIVE messages
@@ -187,22 +209,24 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                     WebSocketComputationChannel.END_SENTINEL)
             del self._channels[channel]
 
-    def _decode_databatch(self, data):
+    def _decode_datapoints(self, data):
         def chunks(l, n):
             """Yield successive n-sized chunks from l."""
             for i in range(0, len(l), n):
                 yield l[i:i+n]
 
-        timestamp, count = struct.unpack('!qi', data[:12])
+        # Ignore count at data[0:4], we just go by chunks of 17.
         datapoints = []
-        for chunk in chunks(data[12:], 17):
+        for chunk in chunks(data[4:], 17):
             vtype, = struct.unpack('!B', chunk[0:1])
             tsId = (base64.urlsafe_b64encode(chunk[1:9])
                     .decode('utf-8')
                     .replace('=', ''))
-            value, = struct.unpack('!q' if vtype == 1 else '!d', chunk[9:])
+            value = None
+            if vtype != 0:
+                value, = struct.unpack('!d' if vtype == 2 else '!q', chunk[9:])
             datapoints.append({'tsId': tsId, 'value': value})
-        return timestamp, datapoints
+        return datapoints
 
     def unhandled_error(self, error):
         """Handler called on unhandled errors (socket errors, OS errors, etc).
