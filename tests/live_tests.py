@@ -13,15 +13,11 @@ optional command line arguments:
 
 """
 
-import time
-import sys
-import os
 import argparse
+import os
 import requests
-
-sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..'))
-import signalfx  # noqa
+import signalfx
+import time
 
 
 parser = argparse.ArgumentParser()
@@ -95,6 +91,7 @@ def main():
             mts_id = r['results'][0]['id']
             test_func(CLIENT_NAME, 'get_metric_time_series',
                       func_args=[mts_id])
+
 
 if __name__ == '__main__':
     main()

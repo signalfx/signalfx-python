@@ -5,11 +5,8 @@
 import logging
 import os
 import sys
-import time
-
-sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..'))
 import signalfx
+import time
 
 
 MY_TOKEN = os.environ['SIGNALFX_API_TOKEN']
