@@ -58,7 +58,7 @@ class SignalFlowClient(object):
         """Attach to an existing SignalFlow computation."""
         params = self._get_params(filters=filters, resolution=resolution)
         c = computation.Computation(
-                lambda since: self._transport.attach(handle, params))
+            lambda since: self._transport.attach(handle, params))
         self._computations.add(c)
         return c
 
