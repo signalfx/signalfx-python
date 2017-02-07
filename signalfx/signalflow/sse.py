@@ -70,6 +70,13 @@ class SSETransport(transport._SignalFlowTransport):
         return SSEComputationChannel(self._post(url, fields=params,
                                                 body=program))
 
+    def preflight(self, program, params):
+        url = '{endpoint}/{path}/preflight'.format(
+            endpoint=self._endpoint,
+            path=SSETransport._SIGNALFLOW_ENDPOINT)
+        return SSEComputationChannel(self._post(url, fields=params,
+                                                body=program))
+
     def start(self, program, params):
         url = '{endpoint}/{path}/start'.format(
             endpoint=self._endpoint,

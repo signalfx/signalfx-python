@@ -64,6 +64,20 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         self._send(request)
         return channel
 
+    def preflight(self, program, params):
+        channel = WebSocketComputationChannel(self.detach)
+
+        request = {
+            'type': 'preflight',
+            'channel': channel.name,
+            'program': program
+        }
+        request.update(params)
+
+        self._channels[channel.name] = channel
+        self._send(request)
+        return channel
+
     def start(self, program, params):
         request = {'type': 'start'}
         request.update(params)
