@@ -1,4 +1,4 @@
-# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
 
 from . import computation, ws
 from .. import constants
@@ -45,6 +45,23 @@ class SignalFlowClient(object):
         self._computations.add(c)
         return c
 
+    def preflight(self, program, start, stop, resolution=None,
+                  max_delay=None):
+        """Preflight the given SignalFlow program and stream the output
+         back."""
+        params = self._get_params(start=start, stop=stop,
+                                  resolution=resolution,
+                                  maxDelay=max_delay)
+
+        def exec_fn(since=None):
+            if since:
+                params['start'] = since
+            return self._transport.preflight(program, params)
+
+        c = computation.Computation(exec_fn)
+        self._computations.add(c)
+        return c
+
     def start(self, program, start=None, stop=None, resolution=None,
               max_delay=None):
         """Start executing the given SignalFlow program without being attached
@@ -58,7 +75,7 @@ class SignalFlowClient(object):
         """Attach to an existing SignalFlow computation."""
         params = self._get_params(filters=filters, resolution=resolution)
         c = computation.Computation(
-                lambda since: self._transport.attach(handle, params))
+            lambda since: self._transport.attach(handle, params))
         self._computations.add(c)
         return c
 

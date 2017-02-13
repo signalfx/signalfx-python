@@ -43,7 +43,7 @@ import logging
 import requests
 
 from .constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
-        DEFAULT_STREAM_ENDPOINT, DEFAULT_TIMEOUT
+    DEFAULT_STREAM_ENDPOINT, DEFAULT_TIMEOUT
 
 
 __author__ = 'SignalFx, Inc'

@@ -27,8 +27,8 @@ class SignalFxReporter(reporter.Reporter):
                             'dict of string keys to string values.')
 
         super(SignalFxReporter, self).__init__(
-                registry=registry,
-                reporting_interval=reporting_interval)
+            registry=registry,
+            reporting_interval=reporting_interval)
 
         self.default_dimensions = default_dimensions
         if default_dimensions is None:

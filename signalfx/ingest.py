@@ -10,13 +10,13 @@ from six.moves import queue
 import threading
 
 from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
-        DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES, INTEGER_MAX, \
-        INTEGER_MIN
+    DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES, INTEGER_MAX, \
+    INTEGER_MIN
 from . import version
 
 try:
     from .generated_protocol_buffers \
-            import signal_fx_protocol_buffers_pb2 as sf_pbuf
+        import signal_fx_protocol_buffers_pb2 as sf_pbuf
 except ImportError:
     sf_pbuf = None
 
@@ -292,10 +292,10 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
                 not isinstance(value, bool) and _integer is True:
             if value < INTEGER_MIN or value > INTEGER_MAX:
                 raise ValueError(
-                        ('{}: {} exceeds signed 64 bit integer range '
-                         'as defined by ProtocolBuffers ({} to {})')
-                        .format(error_prefix, str(value),
-                                str(INTEGER_MIN), str(INTEGER_MAX)))
+                    ('{}: {} exceeds signed 64 bit integer range '
+                     'as defined by ProtocolBuffers ({} to {})')
+                    .format(error_prefix, str(value),
+                            str(INTEGER_MIN), str(INTEGER_MAX)))
             pbuf_obj.value.intValue = value
         elif isinstance(value, float) and _float is True:
             pbuf_obj.value.doubleValue = value
@@ -303,8 +303,8 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
             pbuf_obj.value.strValue = value
         else:
             raise ValueError(
-                    '{}: {} is of invalid type {}'
-                    .format(error_prefix, str(value), str(type(value))))
+                '{}: {} is of invalid type {}'
+                .format(error_prefix, str(value), str(type(value))))
 
     def _assign_property_value(self, prop, value):
         """Assigns a property value to the protobuf obj property"""

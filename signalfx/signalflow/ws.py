@@ -29,8 +29,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
                  timeout=constants.DEFAULT_TIMEOUT):
         ws_endpoint = '{0}/{1}'.format(
-                endpoint.replace('http', 'ws', 1),
-                WebSocketTransport._SIGNALFLOW_WEBSOCKET_ENDPOINT)
+            endpoint.replace('http', 'ws', 1),
+            WebSocketTransport._SIGNALFLOW_WEBSOCKET_ENDPOINT)
 
         transport._SignalFlowTransport.__init__(self, token, ws_endpoint,
                                                 timeout)
@@ -55,6 +55,20 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
 
         request = {
             'type': 'execute',
+            'channel': channel.name,
+            'program': program
+        }
+        request.update(params)
+
+        self._channels[channel.name] = channel
+        self._send(request)
+        return channel
+
+    def preflight(self, program, params):
+        channel = WebSocketComputationChannel(self.detach)
+
+        request = {
+            'type': 'preflight',
             'channel': channel.name,
             'program': program
         }
@@ -162,7 +176,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                 index += 8
             else:
                 timestamp, max_delay = struct.unpack(
-                        '!qq', data[index:index+16])
+                    '!qq', data[index:index+16])
                 index += 16
 
             # Parse out datapoints
@@ -206,7 +220,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         if message.get('type') == 'control-message' and \
                 message.get('event') in ['END_OF_CHANNEL', 'ABORT_CHANNEL']:
             self._channels[channel].offer(
-                    WebSocketComputationChannel.END_SENTINEL)
+                WebSocketComputationChannel.END_SENTINEL)
             del self._channels[channel]
 
     def _decode_datapoints(self, data):
@@ -273,7 +287,7 @@ class WebSocketComputationChannel(channel._Channel):
                 error = event.get('error')
                 if error:
                     raise errors.SignalFlowException(
-                            error, event.get('message'))
+                        error, event.get('message'))
 
                 return messages.StreamMessage.decode(event['type'], event)
             except queue.Empty:
