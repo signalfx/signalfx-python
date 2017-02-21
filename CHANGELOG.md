@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.15]- 2017-02-21: Preflight API](#1015---2017-02-21-preflight-api)
 - [[1.0.14]- 2016-12-07: SignalFlow client bug fixes and context managers](#1014---2016-12-07-signalflow-client-bug-fixes-and-context-managers)
 - [[1.0.13]- 2016-12-05: More features from detector APIs](#1013---2016-12-05-more-features-from-detector-apis)
 - [[1.0.12]- 2016-11-28: Detector APIs](#1012---2016-11-28-detector-apis)
@@ -12,6 +13,18 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+
+#### [1.0.15] - 2017-02-20: Preflight API
+
+Added support for the detector preflighting API, allowing for the
+execution of a detector program in a mode that simply summarizes the
+events that would otherwise be generated, allowing for the quicker
+execution of that preflighting over longer spans of historical data.
+
+This release also includes a bugfix to how the total number of input
+timeseries is calculated, as well as support for a new version of the
+binary data message encoding (not yet used).
 
 #### [1.0.14] - 2016-12-07: SignalFlow client bug fixes and context managers
 
