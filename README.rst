@@ -96,7 +96,7 @@ If you're sending data from multiple places in your code, you should create
 your ingest client once and use it throughout your application. Each ingest
 client instance has an internal queue of datapoints and events that need to be
 sent to SignalFx, as well as an internal thread draining that queue. **When you
-no longer need the client instance, make sure you call ``.stop()`` on it to
+no longer need the client instance, make sure you call** ``.stop()`` **on it to
 ensure the queue is fully drained.**
 
 .. code:: python
