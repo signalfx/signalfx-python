@@ -7,6 +7,7 @@ from six.moves import queue
 import struct
 import threading
 from ws4py.client.threadedclient import WebSocketClient
+import zlib
 
 from . import channel, errors, messages, transport
 from .. import constants
@@ -27,7 +28,8 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     _SIGNALFLOW_WEBSOCKET_ENDPOINT = 'v2/signalflow/connect'
 
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
-                 timeout=constants.DEFAULT_TIMEOUT):
+                 timeout=constants.DEFAULT_TIMEOUT,
+                 compress=True):
         ws_endpoint = '{0}/{1}'.format(
             endpoint.replace('http', 'ws', 1),
             WebSocketTransport._SIGNALFLOW_WEBSOCKET_ENDPOINT)
@@ -35,6 +37,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         transport._SignalFlowTransport.__init__(self, token, ws_endpoint,
                                                 timeout)
 
+        self._compress = compress
         self._server_time = None
         self._connected = False
         self._error = None
@@ -56,6 +59,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         request = {
             'type': 'execute',
             'channel': channel.name,
+            'compress': self._compress,
             'program': program
         }
         request.update(params)
@@ -70,6 +74,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         request = {
             'type': 'preflight',
             'channel': channel.name,
+            'compress': self._compress,
             'program': program
         }
         request.update(params)
@@ -89,6 +94,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         request = {
             'type': 'attach',
             'channel': channel.name,
+            'compress': self._compress,
             'handle': handle
         }
         request.update(params)
@@ -155,32 +161,47 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         version, = struct.unpack('!B', data[0:1])
         if version == 1:
             # v1 preamble
-            version, mtype, channel = struct.unpack('!BBxx16s', data[:20])
-            index = 20
+            header = data[:20]
+            version, mtype, flags, channel = struct.unpack('!BBBx16s', header)
+            data = data[20:]
         elif version == 2:
             # v2 preamble
-            version, mtype, channel = struct.unpack('!hBx16s', data[:20])
-            index = 20
+            header = data[:20]
+            version, mtype, flags, channel = struct.unpack('!hBB16s', header)
+            data = data[20:]
         else:
             _logger.warn('Unsupported binary message version %s!',
                          version)
             return None
 
         channel = ''.join(filter(lambda c: ord(c), channel.decode('utf-8')))
+        is_compressed = flags & (1 << 0)
+        is_json = flags & (1 << 1)
+
+        if is_compressed:
+            try:
+                # 'zlib.MAX_WBITS | 16' flags value is required to correctly
+                # uncompress data compressed by Java's GZIP compression.
+                data = zlib.decompress(data, zlib.MAX_WBITS | 16)
+            except zlib.error:
+                _logger.warn('Error decompressing message contents!')
+                return None
+
+        if is_json:
+            return self._process_message(json.loads(data.decode('utf-8')))
 
         if mtype == 5:
             # Decode data batch message
             if version == 1:
-                timestamp, = struct.unpack('!q', data[index:index+8])
+                timestamp, = struct.unpack('!q', data[0:8])
                 max_delay = None
-                index += 8
+                data = data[8:]
             else:
-                timestamp, max_delay = struct.unpack(
-                    '!qq', data[index:index+16])
-                index += 16
+                timestamp, max_delay = struct.unpack('!qq', data[0:16])
+                data = data[16:]
 
             # Parse out datapoints
-            datapoints = self._decode_datapoints(data[index:])
+            datapoints = self._decode_datapoints(data)
             return {
                 'channel': channel,
                 'type': 'data',
