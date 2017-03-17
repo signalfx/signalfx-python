@@ -346,3 +346,8 @@ integers and longs to (``-(2**63)`` to ``(2**63)-1``).  ``long`` values in
 Python 2.x and ``int`` values in 3.x can exceed these values.  Any value or
 property value less than ``-(2**63)`` or greater than ``(2**63)-1`` will raise
 a ``ValueError`` exception.
+
+License
+-------
+
+Apache Software License v2. Copyright © 2014-2017 SignalFx
