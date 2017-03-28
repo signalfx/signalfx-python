@@ -287,10 +287,9 @@ the ``Computation`` object returned by ``execute()``:
 .. code:: python
 
     if isinstance(msg, signalfx.signalflow.messages.DataMessage):
-        for datapoint in msg.data:
-            tsid = datapoint['tsId']
+        for tsid in msg.data:
+            value = msg.data[tsid]
             metadata = computation.get_metadata(tsid)
-            value = datapoint['value']
             # Display metadata and datapoint value as desired
 
 For more examples of how to execute SignalFlow computation with this library,
