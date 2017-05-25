@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
+# Copyright (C) 2017 SignalFx, Inc. All rights reserved.
+#
+# A simple example showing how to execute a SignalFx SignalFlow computation
+# from Python and dump its data, metadata and event output to the console.
+
 import argparse
 import os
 import sys
 
 sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..'))
+    os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 import signalfx  # noqa
 from signalfx.signalflow import messages  # noqa
 

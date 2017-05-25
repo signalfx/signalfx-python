@@ -293,11 +293,23 @@ the ``Computation`` object returned by ``execute()``:
 
 For more examples of how to execute SignalFlow computation with this library,
 interpret and use the returned stream messages, you can look at the simple
-example in `examples/signalflow.py` or at the `SignalFlow CLI`_ and its
+example in `examples/signalflow/basic.py` or at the `SignalFlow CLI`_ and its
 implementation which uses this library.
 
-.. _examples/signalflow.py: examples/signalflow.py
+.. _examples/signalflow/basic.py: examples/signalflow/basic.py
 .. _SignalFlow CLI: https://github.com/signalfx/signalflow-cli
+
+Building a Pandas DataFrame from SignalFlow output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the SignalFlow output being programmatically accessible, it's easy to
+convert this data into any form that you need for further use or analysis. One
+such use case is to build a `Pandas DataFrame`_ with the computation's output.
+For a complete example of how to do this, see
+`examples/signalflow/dataframe.py`.
+
+.. _examples/signalflow/dataframe.py: examples/signalflow/dataframe.py
+.. _Pandas DataFrame: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 Known Issues
 ------------
