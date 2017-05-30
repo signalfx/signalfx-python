@@ -25,6 +25,11 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     install_requires=requirements,
+    entry_points={
+        'console_scripts': [
+            'sfx-sync-detectors = signalfx.detectors.__main__:main',
+        ],
+    },
     classifiers=[
         'Operating System :: OS Independent',
         'Programming Language :: Python',
