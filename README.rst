@@ -57,10 +57,9 @@ one of those clients. For the ingest client, you need to specify your
 organization or team's API access token (which can be obtained from the
 SignalFx organization you want to report data into). For the REST API and
 SignalFlow API clients, you must use your user access token. For more
-information on access tokens, see the API's `Authentication Overview
-documentation`_.
+information on access tokens, see the API's `Authentication documentation`_.
 
-.. _Authentication Overview documentation: https://developers.signalfx.com/docs/authentication-overview
+.. _Authentication documentation: https://developers.signalfx.com/docs/authentication
 
 Reporting data
 ~~~~~~~~~~~~~~
