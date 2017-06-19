@@ -2,3 +2,5 @@
 
 name = 'signalfx'
 version = '1.0.16'
+
+user_agent = 'signalfx-python/' + version

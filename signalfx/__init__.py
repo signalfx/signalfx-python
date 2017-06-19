@@ -27,29 +27,30 @@ Example of executing a SignalFlow computation:
     import signalfx
 
     program = "data('cpu.utilization').mean().publish()"
-    flow = signalfx.SignalFx().signalflow('your_user_token')
-    for msg in flow.execute(program).stream():
-        if isinstance(msg, signalfx.signalflow.messages.DataMessage):
-            print(msg.data)
-    flow.stop()
+    with signalfx.SignalFx().signalflow('your_user_token') as flow:
+        for msg in flow.execute(program).stream():
+            if isinstance(msg, signalfx.signalflow.messages.DataMessage):
+                print(msg.data)
 
 Read the documentation at https://github.com/signalfx/signalfx-python for more
 in-depth examples.
 """
 
-# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2015-2017 SignalFx, Inc. All rights reserved.
 
 import logging
 import requests
 
 from .constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
     DEFAULT_STREAM_ENDPOINT, DEFAULT_TIMEOUT
+from . import version
 
 
 __author__ = 'SignalFx, Inc'
 __email__ = 'support+python@signalfx.com'
-__copyright__ = 'Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.'
+__copyright__ = 'Copyright (C) 2015-2017 SignalFx, Inc. All rights reserved.'
 __all__ = ['SignalFx']
+__version__ = version.version
 
 _logger = logging.getLogger(__name__)
 

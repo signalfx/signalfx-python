@@ -1,4 +1,4 @@
-# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
 
 import certifi
 import json
@@ -6,7 +6,7 @@ import sseclient
 import urllib3
 
 from . import channel, errors, messages, transport
-from .. import constants
+from .. import constants, version
 
 
 class SSETransport(transport._SignalFlowTransport):
@@ -30,7 +30,9 @@ class SSETransport(transport._SignalFlowTransport):
             'url': self._endpoint,
             'headers': {
                 'Content-Type': 'text/plain',
-                'X-SF-Token': self._token
+                'X-SF-Token': self._token,
+                'User-Agent': '{} urllib3/{}'.format(version.user_agent,
+                                                     urllib3.__version__)
             },
             'timeout': urllib3.Timeout(connect=self._timeout, read=None),
         }
