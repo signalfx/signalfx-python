@@ -1,4 +1,4 @@
-# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
 
 import base64
 import json
@@ -6,11 +6,12 @@ import logging
 from six.moves import queue
 import struct
 import threading
+import ws4py
 from ws4py.client.threadedclient import WebSocketClient
 import zlib
 
 from . import channel, errors, messages, transport
-from .. import constants
+from .. import constants, version
 
 _logger = logging.getLogger(__name__)
 
@@ -142,7 +143,12 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     def opened(self):
         """Handler called when the WebSocket connection is opened. The first
         thing to do then is to authenticate ourselves."""
-        request = {'type': 'authenticate', 'token': self._token}
+        request = {
+            'type': 'authenticate',
+            'token': self._token,
+            'userAgent': '{} ws4py/{}'.format(version.user_agent,
+                                              ws4py.__version__),
+        }
         self.send(json.dumps(request))
 
     def received_message(self, message):
