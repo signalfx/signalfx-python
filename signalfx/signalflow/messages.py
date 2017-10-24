@@ -166,9 +166,10 @@ class EventMessage(StreamMessage):
     """Message received when the computation has generated an event or alert
     from a detect block."""
 
-    def __init__(self, tsid, timestamp_ms, properties):
+    def __init__(self, tsid, timestamp_ms, metadata, properties):
         self._tsid = tsid
         self._timestamp_ms = timestamp_ms
+        self._metadata = metadata
         self._properties = properties
 
     @property
@@ -182,6 +183,12 @@ class EventMessage(StreamMessage):
         return self._timestamp_ms
 
     @property
+    def metadata(self):
+        """The metadata of the EventTimeSeries the event belongs to. This may
+        be empty for events created by the SignalFlow computation itself."""
+        return self._metadata
+
+    @property
     def properties(self):
         """The properties of the event. For alerts, you can expect 'was' and
         'is' properties that communicate the evolution of the state of the
@@ -192,6 +199,7 @@ class EventMessage(StreamMessage):
     def decode(payload):
         return EventMessage(payload['tsId'],
                             payload['timestampMs'],
+                            payload['metadata'],
                             payload['properties'])
 
 
