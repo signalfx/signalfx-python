@@ -27,6 +27,10 @@ def get_data_frame(client, program, start, stop, resolution=None):
     data = {}
     metadata = {}
 
+    is_rateofchange = '.rateofchange()' in program
+    if is_rateofchange:
+        program = program.replace('.rateofchange()', '')
+
     c = client.execute(program, start=start, stop=stop, resolution=resolution)
     for msg in c.stream():
         if isinstance(msg, messages.DataMessage):
@@ -38,6 +42,8 @@ def get_data_frame(client, program, start, stop, resolution=None):
             metadata[msg.tsid] = msg.properties
 
     df = pandas.DataFrame.from_dict(data, orient='index')
+    if is_rateofchange:
+        df = df.diff()
     df.metadata = metadata
     return df
 
