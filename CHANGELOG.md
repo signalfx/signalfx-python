@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.17] - 2018-03-02: Support for immediate SignalFlow results](#1017---2018-03-02-support-for-immediate-signalflow-results)
 - [[1.0.16] - 2017-03-24: SignalFlow streaming performance](#1016---2017-03-24-signalflow-streaming-performance)
 - [[1.0.15] - 2017-02-21: Preflight API](#1015---2017-02-21-preflight-api)
 - [[1.0.14] - 2016-12-07: SignalFlow client bug fixes and context managers](#1014---2016-12-07-signalflow-client-bug-fixes-and-context-managers)
@@ -15,6 +16,20 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
+
+#### [1.0.17] - 2018-03-02: Support for immediate SignalFlowResults
+
+Added support for the new `immediate` flag when executing SignalFlow
+computation. Setting this flag to `true` forces the system to shift the
+timerange of the computation by the `maxDelay` amount (either detected,
+or specified), to ensure that the computation returns and completes
+without additional delay to wait for late data.
+
+Also added support in the library to access event metadata on events
+received from a SignalFlow computation.
+
+Updated the default TCP timeout to 5 seconds to match our Java and Ruby
+libraries.
 
 #### [1.0.16] - 2017-03-24: SignalFlow streaming performance
 
