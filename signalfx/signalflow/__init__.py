@@ -26,7 +26,7 @@ class SignalFlowClient(object):
         return self.close()
 
     def _get_params(self, **kwargs):
-        return dict((k, v) for k, v in kwargs.items() if v)
+        return dict((k, v) for k, v in kwargs.items() if v is not None)
 
     def execute(self, program, start=None, stop=None, resolution=None,
                 max_delay=None, persistent=False, immediate=False):
