@@ -165,20 +165,13 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         # Binary messages use a custom encoding format. First, unpack the
         # leading version byte to determine how to unpack the rest.
         version, = struct.unpack('!B', data[0:1])
-        if version == 1:
-            # v1 preamble
-            header = data[:20]
-            version, mtype, flags, channel = struct.unpack('!BBBx16s', header)
-            data = data[20:]
-        elif version == 2:
-            # v2 preamble
-            header = data[:20]
-            version, mtype, flags, channel = struct.unpack('!hBB16s', header)
-            data = data[20:]
-        else:
+        if version > 3:
             _logger.warn('Unsupported binary message version %s!',
                          version)
             return None
+
+        header, data = data[:20], data[20:]
+        version, mtype, flags, channel = struct.unpack('!BBBx16s', header)
 
         channel = ''.join(filter(lambda c: ord(c), channel.decode('utf-8')))
         is_compressed = flags & (1 << 0)
@@ -202,7 +195,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                 timestamp, = struct.unpack('!q', data[0:8])
                 max_delay = None
                 data = data[8:]
-            else:
+            elif version == 2 or version == 3:
                 timestamp, max_delay = struct.unpack('!qq', data[0:16])
                 data = data[16:]
 
@@ -283,9 +276,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         if code != 1000:
             self._error = errors.SignalFlowException(code, reason)
             _logger.info('Lost WebSocket connection with %s (%s: %s).',
-                    self,
-                    code,
-                    reason)
+                         self, code, reason)
             for c in self._channels.values():
                 c.offer(WebSocketComputationChannel.END_SENTINEL)
         self._channels.clear()
