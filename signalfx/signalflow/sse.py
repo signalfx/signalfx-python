@@ -24,7 +24,7 @@ class SSETransport(transport._SignalFlowTransport):
     _SIGNALFLOW_ENDPOINT = 'v2/signalflow'
 
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
-                 timeout=constants.DEFAULT_TIMEOUT):
+                 timeout=constants.DEFAULT_TIMEOUT, compress=True):
         super(SSETransport, self).__init__(token, endpoint, timeout)
         pool_args = {
             'url': self._endpoint,

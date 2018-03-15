@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2015-2018 SignalFx, Inc. All rights reserved.
 
 import collections
 import json
@@ -8,6 +8,7 @@ import requests
 import six
 from six.moves import queue
 import threading
+import zlib
 
 from .constants import DEFAULT_INGEST_ENDPOINT, DEFAULT_TIMEOUT, \
     DEFAULT_BATCH_SIZE, SUPPORTED_EVENT_CATEGORIES, INTEGER_MAX, \
@@ -20,6 +21,7 @@ try:
 except ImportError:
     sf_pbuf = None
 
+_COMPRESSION_LEVEL = 8
 _logger = logging.getLogger(__name__)
 
 
@@ -45,11 +47,12 @@ class _BaseSignalFxIngestClient(object):
 
     def __init__(self, token, endpoint=DEFAULT_INGEST_ENDPOINT,
                  timeout=DEFAULT_TIMEOUT, batch_size=DEFAULT_BATCH_SIZE,
-                 user_agents=None):
+                 user_agents=None, compress=True):
         self._token = token
         self._endpoint = endpoint.rstrip('/')
         self._timeout = timeout
         self._batch_size = max(1, batch_size)
+        self._compress = compress
 
         self._extra_dimensions = {}
 
@@ -66,6 +69,11 @@ class _BaseSignalFxIngestClient(object):
             'X-SF-Token': self._token,
             'User-Agent': ' '.join(user_agent),
         })
+
+        if compress:
+            self._session.headers.update({
+                'Content-Encoding': 'gzip'
+            })
 
     def __enter__(self):
         return self
@@ -230,6 +238,15 @@ class _BaseSignalFxIngestClient(object):
         session = session or self._session
         timeout = timeout or self._timeout
         _logger.debug('Raw datastream being sent: %s', pprint.pformat(data))
+
+        if self._compress:
+            uncompressed_bytes = len(data)
+            c = zlib.compressobj(_COMPRESSION_LEVEL, zlib.DEFLATED,
+                                 zlib.MAX_WBITS | 16)
+            data = c.compress(data) + c.flush()
+            _logger.debug('Compressed payload from %d to %d bytes',
+                          uncompressed_bytes, len(data))
+
         response = session.post(url, data=data, timeout=timeout)
         _logger.debug('Sending to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',

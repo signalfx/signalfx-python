@@ -66,11 +66,13 @@ class SignalFx(object):
     def __init__(self, api_endpoint=DEFAULT_API_ENDPOINT,
                  ingest_endpoint=DEFAULT_INGEST_ENDPOINT,
                  stream_endpoint=DEFAULT_STREAM_ENDPOINT,
-                 timeout=DEFAULT_TIMEOUT):
+                 timeout=DEFAULT_TIMEOUT,
+                 compress=True):
         self._api_endpoint = api_endpoint
         self._ingest_endpoint = ingest_endpoint
         self._stream_endpoint = stream_endpoint
         self._timeout = timeout
+        self._compress = compress
 
     def login(self, email, password):
         """Authenticate a user with SignalFx to acquire a session token.
@@ -96,7 +98,7 @@ class SignalFx(object):
             endpoint=endpoint or self._api_endpoint,
             timeout=timeout or self._timeout)
 
-    def ingest(self, token, endpoint=None, timeout=None):
+    def ingest(self, token, endpoint=None, timeout=None, compress=None):
         """Obtain a datapoint and event ingest client."""
         from . import ingest
         if ingest.sf_pbuf:
@@ -105,15 +107,19 @@ class SignalFx(object):
             _logger.warn('Protocol Buffers not installed properly; '
                          'falling back to JSON.')
             client = ingest.JsonSignalFxIngestClient
+        compress = compress if compress is not None else self._compress
         return client(
             token=token,
             endpoint=endpoint or self._ingest_endpoint,
-            timeout=timeout or self._timeout)
+            timeout=timeout or self._timeout,
+            compress=compress)
 
-    def signalflow(self, token, endpoint=None, timeout=None):
+    def signalflow(self, token, endpoint=None, timeout=None, compress=None):
         """Obtain a SignalFlow API client."""
         from . import signalflow
+        compress = compress if compress is not None else self._compress
         return signalflow.SignalFlowClient(
             token=token,
             endpoint=endpoint or self._stream_endpoint,
-            timeout=timeout or self._timeout)
+            timeout=timeout or self._timeout,
+            compress=compress)
