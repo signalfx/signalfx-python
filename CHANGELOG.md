@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.18] - 2018-03-15: Compression of datapoint payloads](#1018---2018-03-15-compression-of-datapoint-payloads)
 - [[1.0.17] - 2018-03-02: Support for immediate SignalFlow results](#1017---2018-03-02-support-for-immediate-signalflow-results)
 - [[1.0.16] - 2017-03-24: SignalFlow streaming performance](#1016---2017-03-24-signalflow-streaming-performance)
 - [[1.0.15] - 2017-02-21: Preflight API](#1015---2017-02-21-preflight-api)
@@ -17,7 +18,15 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
 
-#### [1.0.17] - 2018-03-02: Support for immediate SignalFlowResults
+#### [1.0.18] - 2018-03-15: Compression of datapoint payloads
+
+The main change in 1.0.18 is that payloads of datapoints sent to
+SignalFx will now be compressed by default (using GZip compression and
+`Content-Encoding: gzip`). This can be disabled by specifying
+`compress=False` on the SignalFx client, or on the ingest sub-client
+directly.
+
+#### [1.0.17] - 2018-03-02: Support for immediate SignalFlow results
 
 Added support for the new `immediate` flag when executing SignalFlow
 computation. Setting this flag to `true` forces the system to shift the
