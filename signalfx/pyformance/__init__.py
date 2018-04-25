@@ -3,9 +3,66 @@
 # Copyright (C) 2014 SignalFuse, Inc. All rights reserved.
 # Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
+from pyformance.registry import global_registry
 from pyformance.reporters import reporter
 import signalfx
 import logging
+
+
+class MetricMetadata(object):
+    """Metric dimensions metadata repository.
+
+    This class mediates the registration of metrics with additional dimensions
+    and registers the metrics in the Pyformance registry using a unique
+    composite name, while recording the mapping from composite name to the
+    original metric name and dimensions.
+
+    It then makes this information available to the SignalFxReporter so metrics
+    can be reported with the appropriate metric and dimensions.
+    """
+
+    def __init__(self):
+        self._metadata = {}
+
+    def get_metadata(self, key):
+        dimensions = self._metadata.get(key)
+        return dimensions or {}
+
+    def register(self, registration_fn, key, **kwargs):
+        dimensions = dict((k, str(v)) for k, v in kwargs.items())
+        composite_key = self._composite_name(key, dimensions)
+        self._metadata[composite_key] = {
+            'metric': key,
+            'dimensions': dimensions
+        }
+        return registration_fn(composite_key)
+
+    def _composite_name(self, metric_name, dimensions=None):
+        composite = []
+        if dimensions:
+            for key in sorted(dimensions.keys()):
+                composite.append('{}={}'.format(key, dimensions[key]))
+        composite.append(metric_name)
+        return '.'.join(composite)
+
+
+_global_metadata = MetricMetadata()
+
+
+def global_metadata():
+    return _global_metadata
+
+
+def counter(key, **kwargs):
+    return global_metadata().register(global_registry().counter, key, **kwargs)
+
+
+def gauge(key, **kwargs):
+    return global_metadata().register(global_registry().gauge, key, **kwargs)
+
+
+def timer(key, **kwargs):
+    return global_metadata().register(global_registry().timer, key, **kwargs)
 
 
 class SignalFxReporter(reporter.Reporter):
@@ -20,7 +77,8 @@ class SignalFxReporter(reporter.Reporter):
 
     def __init__(
             self, token, ingest_endpoint=signalfx.DEFAULT_INGEST_ENDPOINT,
-            registry=None, reporting_interval=1, default_dimensions=None):
+            registry=None, reporting_interval=1, default_dimensions=None,
+            metadata=None):
         if default_dimensions is not None and not isinstance(
                 default_dimensions, dict):
             raise TypeError('The default_dimensions argument must be a '
@@ -30,9 +88,8 @@ class SignalFxReporter(reporter.Reporter):
             registry=registry,
             reporting_interval=reporting_interval)
 
-        self.default_dimensions = default_dimensions
-        if default_dimensions is None:
-            self.default_dimensions = {}
+        self._default_dimensions = default_dimensions
+        self._metadata = metadata or global_metadata()
 
         self._sfx = (signalfx.SignalFx(ingest_endpoint=ingest_endpoint)
                      .ingest(token))
@@ -54,11 +111,15 @@ class SignalFxReporter(reporter.Reporter):
                     'value': value,
                     'timestamp': sf_timestamp
                 }
-                if len(self.default_dimensions) > 0:
-                    # TODO(wt): Plumbing in custom dimensions at some point
-                    # will require copying the default dimensions instead of
-                    # using them directly.
-                    info['dimensions'] = self.default_dimensions
+
+                metadata = self._metadata.get_metadata(metric)
+                if metadata:
+                    info['metric'] = metadata['metric']
+                    info['dimensions'] = dict(metadata['dimensions'])
+
+                if self._default_dimensions:
+                    info['dimensions'].update(self._default_dimensions)
+
                 if submetric == 'count':
                     cumulative_counters.append(info)
                 else:
@@ -66,16 +127,8 @@ class SignalFxReporter(reporter.Reporter):
                         info['metric'] += '.{}'.format(submetric)
                     gauges.append(info)
 
-        r = self._sfx.send(
-            cumulative_counters=cumulative_counters, gauges=gauges)
-        if r is None:
-            return
-        if not r:
-            try:
-                error = r.json()['message']
-            except Exception:
-                error = '{} {}'.format(r.status_code, r.text)
-            logging.error('Error sending metrics to SignalFx: %s', error)
+        logging.debug('Sending counters: %s and gauges: %s', cumulative_counters, gauges)
+        self._sfx.send(cumulative_counters=cumulative_counters, gauges=gauges)
 
     def stop(self):
         super(SignalFxReporter, self).stop()
