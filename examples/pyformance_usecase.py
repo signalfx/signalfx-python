@@ -66,7 +66,7 @@ if __name__ == '__main__':
         logging.info('Called me with dimensions!')
         # pass dimensions as keyword arguments in the metric function
         # calls in the signalfx pyformance library
-        signalfx.pyformance.gauge('demo.time2',
+        signalfx.pyformance.gauge('demo.custom.time2',
                                   hello="world").set_value(time.time())
 
     pyf.gauge('demo.pid').set_value(os.getpid())
