@@ -3,7 +3,8 @@
 # Copyright (C) 2014 SignalFuse, Inc. All rights reserved.
 # Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
 
-from pyformance.registry import global_registry
+import functools
+from pyformance.registry import global_registry, get_qualname
 from pyformance.reporters import reporter
 import signalfx
 import logging
@@ -21,14 +22,15 @@ class MetricMetadata(object):
     can be reported with the appropriate metric and dimensions.
     """
 
-    def __init__(self):
+    def __init__(self, registry=None):
         self._metadata = {}
+        self._registry = registry or global_registry()
 
     def get_metadata(self, key):
         dimensions = self._metadata.get(key)
         return dimensions or {}
 
-    def register(self, registration_fn, key, **kwargs):
+    def register(self, registration_fn, key, gauge=None, **kwargs):
         dimensions = dict((k, str(v)) for k, v in kwargs.items())
         composite_key = self._composite_name(key, dimensions)
         self._metadata[composite_key] = {
@@ -45,24 +47,141 @@ class MetricMetadata(object):
         composite.append(metric_name)
         return '.'.join(composite)
 
+    def clear(self):
+        """clears the registered metadata"""
+        self._metdata.clear()
+
+    def counter(self, key, **kwargs):
+        """adds counter with dimensions to the registry"""
+        return self.register(self._registry.counter, key, **kwargs)
+
+    def gauge(self, key, gauge=None, default=float("nan"), **kwargs):
+        """adds gauge with dimensions to the registry"""
+        return self.register(self._registry.gauge, key, gauge=gauge,
+                             default=default, **kwargs)
+
+    def timer(self, key, **kwargs):
+        """adds timer with dimensions to the registry"""
+        return self.register(self._registry.timer, key, **kwargs)
+
+    def histogram(self, key, **kwargs):
+        """adds histogram with dimensions to the registry"""
+        return self.register(self._registry.histogram, key, **kwargs)
+
+    def meter(self, key, **kwargs):
+        """adds meter with dimensions to the registry"""
+        return self.register(self._registry.meter, key, **kwargs)
+
+    def count_calls(self, **dims):
+        """decorator to track the number of times a function is called."""
+        def counter_wrapper(fn):
+            @functools.wraps(fn)
+            def fn_wrapper(*args, **kwargs):
+                self.counter("%s_calls" % get_qualname(fn), **dims).inc()
+                return fn(*args, **kwargs)
+            return fn_wrapper
+        return counter_wrapper
+
+    def meter_calls(self, **dims):
+        """decorator to track the rate at which a function is called."""
+        def meter_wrapper(fn):
+            @functools.wraps(fn)
+            def fn_wrapper(*args, **kwargs):
+                self. meter("%s_calls" % get_qualname(fn), **dims).mark()
+                return fn(*args, **kwargs)
+            return fn_wrapper
+        return meter_wrapper
+
+    def hist_calls(self, **dims):
+        """decorator to check the distribution of return values of a
+        function.
+        """
+        def hist_wrapper(fn):
+            @functools.wraps(fn)
+            def fn_wrapper(*args, **kwargs):
+                _histogram = self.histogram(
+                    "%s_calls" % get_qualname(fn), **dims)
+                rtn = fn(*args, **kwargs)
+                if type(rtn) in (int, float):
+                    _histogram.update(rtn)
+                return rtn
+            return fn_wrapper
+        return hist_wrapper
+
+    def time_calls(self, **dims):
+        """decorator to time the execution of the function."""
+        def time_wrapper(fn):
+            @functools.wraps(fn)
+            def fn_wrapper(*args, **kwargs):
+                _timer = self.timer("%s_calls" % get_qualname(fn), **dims)
+                with _timer.time(fn=get_qualname(fn)):
+                    return fn(*args, **kwargs)
+            return fn_wrapper
+        return time_wrapper
+
 
 _global_metadata = MetricMetadata()
 
 
 def global_metadata():
+    """returns the global metadata"""
     return _global_metadata
 
 
+def set_global_metadata(metadata):
+    """sets the global metadata obj"""
+    global _global_metadata
+    _global_metadata = metadata
+
+
 def counter(key, **kwargs):
-    return global_metadata().register(global_registry().counter, key, **kwargs)
+    """adds counter with dimensions to the global pyformance registry"""
+    return global_metadata().counter(key, **kwargs)
 
 
-def gauge(key, **kwargs):
-    return global_metadata().register(global_registry().gauge, key, **kwargs)
+def gauge(key, gauge=None, default=float("nan"), **kwargs):
+    """adds gauge with dimensions to the global pyformance registry"""
+    return global_metadata().gauge(key, gauge=gauge, default=default, **kwargs)
 
 
 def timer(key, **kwargs):
-    return global_metadata().register(global_registry().timer, key, **kwargs)
+    """adds timer with dimensions to the global pyformance registry"""
+    return global_metadata().timer(key, **kwargs)
+
+
+def histogram(key, **kwargs):
+    """adds histogram with dimensions to the global pyformance registry"""
+    return global_metadata().histogram(key, **kwargs)
+
+
+def meter(key, **kwargs):
+    """adds meter with dimensions to the global pyformance registry"""
+    return global_metadata().meter(key, **kwargs)
+
+
+def clear():
+    """clears the global metadata store"""
+    return global_metadata().clear()
+
+
+def count_calls(**dims):
+    """decorator to track the number of times a function is called."""
+    return global_metadata().count_calls(**dims)
+
+
+def meter_calls(**dims):
+    """decorator to track the rate at which a function is called."""
+    return global_metadata().meter_calls(**dims)
+
+
+def hist_calls(**dims):
+    """decorator to check the distribution of return values of a function."""
+    return global_metadata().hist_calls(**dims)
+
+
+def time_calls(**dims):
+    """decorator to time the execution of the function."""
+    return global_metadata().time_calls(**dims)
 
 
 class SignalFxReporter(reporter.Reporter):
@@ -127,7 +246,8 @@ class SignalFxReporter(reporter.Reporter):
                         info['metric'] += '.{}'.format(submetric)
                     gauges.append(info)
 
-        logging.debug('Sending counters: %s and gauges: %s', cumulative_counters, gauges)
+        logging.debug('Sending counters: %s and gauges: %s',
+                      cumulative_counters, gauges)
         self._sfx.send(cumulative_counters=cumulative_counters, gauges=gauges)
 
     def stop(self):
