@@ -5,13 +5,14 @@
 import argparse
 import os
 import logging
-import pyformance as pyf
 import sys
 import time
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '..'))
-import signalfx.pyformance  # noqa
+
+# import the signalfx pyformance library
+import signalfx.pyformance  as pyf # noqa
 
 
 if __name__ == '__main__':
@@ -20,65 +21,66 @@ if __name__ == '__main__':
     parser.add_argument('token', help='Your SignalFx API access token')
     options = parser.parse_args()
 
+    # @pyf.count_calls counts the number of times callme is invoked
+    # and adds the metric to the global pyformance registry
     @pyf.count_calls
     def callme():
         logging.info('Called me!')
+        # pyf.gauge() adds a gauge to the global pyformance registry
         pyf.gauge('demo.time').set_value(time.time())
 
-    # the signalfx pyformance module has decorators and functions for
-    # reporting metrics with custom dimensions
-    @signalfx.pyformance.count_calls(dimension1="dimension2")
-    def callme_with_dimensions():
+    # @pyf.count_calls_with_dims counts the number of times
+    # callme_with_dims is invoked.  The dimension
+    # ("dimension_key"="dimension_value") is included on the metric
+    @pyf.count_calls_with_dims(dimension_key="dimension_value")
+    def callme_with_dims():
         logging.info('Called me with dimensions!')
-        # dimensions can be passed as keyword arguments in the
-        # metric function call from the signalfx pyformance library
-        signalfx.pyformance.gauge('demo.time2', dimension1="dimension2"
-                                  ).set_value(time.time())
+        # pyf.gauge() adds a gauge to the global pyformance registry
+        # and accepts dimensions as keyword arguments
+        pyf.gauge('demo.time2',
+                  dimension_key="dimension_value").set_value(time.time())
 
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    # the signalfx reporter uses the global_metadata and
-    # global_registry by default
-    sfx = signalfx.pyformance.SignalFxReporter(options.token)
+    # the signalfx reporter uses the pyformance global_registry by default
+    sfx = pyf.SignalFxReporter(options.token)
     sfx.start()
 
-    # if you wish to use a custom registry
-    # create the custom registry using pyformance
+    # a custom registry can be created with SignalFx Pyformance MetricsRegistry
     custom_registry = pyf.MetricsRegistry()
-    # create the custom MetricMetadata from signalfx and pass it
-    # the new registry
-    custom_registry_metadata = signalfx.pyformance.MetricMetadata(
-        custom_registry)
-    # pass both the registry and metadata into a new SignalFxReporter
-    custom_sfx = signalfx.pyformance.SignalFxReporter(
-        options.token, registry=custom_registry,
-        metadata=custom_registry_metadata)
 
-    # use the functions and decorators on the MetricMetadata to emit
-    # metrics with dimensions
-    @custom_registry_metadata.count_calls()
+    # a custom registry can be set as the global registry using
+    # pyf.set_global_registry(custom_registry)
+
+    # the new registry must be passed to a new SignalFx Pyformance Reporter
+    custom_sfx = pyf.SignalFxReporter(options.token, registry=custom_registry)
+    custom_sfx.start()
+
+    # @ style decorators only work with the global registry
     def custom_callme():
         logging.info('Called me!')
-        pyf.gauge('demo.custom.time').set_value(time.time())
+        # metrics may be registered with the new registry
+        custom_registry.gauge('demo.time.custom').set_value(time.time())
 
-    @custom_registry_metadata.count_calls(hello="world")
-    def custom_callme_with_dimensions():
+    def custom_callme_with_dims():
         logging.info('Called me with dimensions!')
         # pass dimensions as keyword arguments in the metric function
         # calls in the signalfx pyformance library
-        signalfx.pyformance.gauge('demo.custom.time2',
-                                  hello="world").set_value(time.time())
+        custom_registry.gauge(
+            'demo.time2.custom',
+            dimension_key="dimension_value").set_value(time.time())
 
     pyf.gauge('demo.pid').set_value(os.getpid())
 
     try:
         while True:
             callme()
-            callme_with_dimensions()
+            callme_with_dims()
             custom_callme()
-            custom_callme_with_dimensions()
+            custom_callme_with_dims()
             time.sleep(0.5)
     except KeyboardInterrupt:
         pass
 
     sfx.stop()
+    custom_sfx.stop()
