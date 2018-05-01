@@ -2,6 +2,7 @@
 
 # Copyright (C) 2017 SignalFx, Inc. All rights reserved.
 
+from pyformance.registry import get_qualname
 import os
 import sys
 import unittest
@@ -96,23 +97,31 @@ class TestPyformance(unittest.TestCase):
         def callme():
             pass
 
+        qcallme = get_qualname(callme)
+
         @pyf.count_calls_with_dims(counter_dim='hello_counter')
         def callme_with_dims():
             pass
 
+        qcallme_with_dims = get_qualname(callme_with_dims)
+
         callme()
         callme_with_dims()
-        self.assertEqual(
-            pyf.global_registry().metadata.get_metadata(
-                'counter_dim=hello_counter.callme_with_dims_calls'),
-            {
-                'dimensions': {'counter_dim': 'hello_counter'},
-                'metric': 'callme_with_dims_calls',
+        if sys.version_info[0] < 3:
+            self.assertEqual(
+                pyf.global_registry().metadata.get_metadata(
+                    'counter_dim=hello_counter.{0}_calls'.format(
+                        qcallme_with_dims)),
+                {
+                    'dimensions': {'counter_dim': 'hello_counter'},
+                    'metric': '{0}_calls'.format(qcallme_with_dims),
+                })
+            self.assertEqual(pyf.dump_metrics(), {
+                '{0}_calls'.format(qcallme): {'count': 1},
+                'counter_dim=hello_counter.{0}_calls'.format(
+                    qcallme_with_dims):
+                {'count': 1},
             })
-        self.assertEqual(pyf.dump_metrics(), {
-            'callme_calls': {'count': 1},
-            'counter_dim=hello_counter.callme_with_dims_calls': {'count': 1},
-        })
 
     def test_histogram(self):
         reg = pyf.MetricsRegistry()
@@ -125,13 +134,6 @@ class TestPyformance(unittest.TestCase):
         h2.add(1)
         h2.add(1)
         h2.add(1)
-        self.assertEqual(
-            reg.metadata.get_metadata(
-                'histogram_dim=hello_histogram.test_histogram_with_dim'),
-            {
-                'dimensions': {'histogram_dim': 'hello_histogram'},
-                'metric': 'test_histogram_with_dim',
-            })
 
         metrics = reg.dump_metrics()
         self.assertEqual(metrics, {
@@ -181,9 +183,13 @@ class TestPyformance(unittest.TestCase):
         def callme():
             return 1
 
+        qcallme = get_qualname(callme)
+
         @pyf.hist_calls_with_dims(histogram_dim='hello_histogram')
         def callme_with_dims():
             return 1
+
+        qcallme_with_dims = get_qualname(callme_with_dims)
 
         callme()
         callme()
@@ -191,22 +197,26 @@ class TestPyformance(unittest.TestCase):
         callme_with_dims()
         callme_with_dims()
         callme_with_dims()
+
         self.assertEqual(
             pyf.global_registry().metadata.get_metadata(
-                'histogram_dim=hello_histogram.callme_with_dims_calls'),
+                'histogram_dim=hello_histogram.{0}_calls'.format(
+                    qcallme_with_dims)),
             {
                 'dimensions': {'histogram_dim': 'hello_histogram'},
-                'metric': 'callme_with_dims_calls',
+                'metric': '{0}_calls'.format(qcallme_with_dims),
             })
         self.assertEqual(pyf.dump_metrics(), {
-            'callme_calls': {'count': 3, '999_percentile': 1,
-                             '99_percentile': 1, 'min': 1,
-                             '95_percentile': 1, '75_percentile': 1,
-                             'std_dev': 0.0, 'max': 1, 'avg': 1.0},
-            'histogram_dim=hello_histogram.callme_with_dims_calls':
+            '{0}_calls'.format(qcallme): {
+                'count': 3, '999_percentile': 1,
+                '99_percentile': 1, 'min': 1,
+                '95_percentile': 1, '75_percentile': 1,
+                'std_dev': 0.0, 'max': 1, 'avg': 1.0},
+            'histogram_dim=hello_histogram.{0}_calls'.format(
+                qcallme_with_dims):
             {'count': 3, '999_percentile': 1, '99_percentile': 1, 'min': 1,
-             '95_percentile': 1, '75_percentile': 1, 'std_dev': 0.0,
-             'max': 1, 'avg': 1.0},
+                '95_percentile': 1, '75_percentile': 1, 'std_dev': 0.0,
+                'max': 1, 'avg': 1.0},
         })
 
     def test_meter(self):
@@ -247,6 +257,8 @@ class TestPyformance(unittest.TestCase):
         def callme_with_dims():
             return 1
 
+        qcallme_with_dims = get_qualname(callme_with_dims)
+
         callme()
         callme()
         callme()
@@ -256,10 +268,10 @@ class TestPyformance(unittest.TestCase):
 
         self.assertEqual(
             pyf.global_registry().metadata.get_metadata(
-                'meter_dim=hello_meter.callme_with_dims_calls'),
+                'meter_dim=hello_meter.{0}_calls'.format(qcallme_with_dims)),
             {
                 'dimensions': {'meter_dim': 'hello_meter'},
-                'metric': 'callme_with_dims_calls',
+                'metric': '{0}_calls'.format(qcallme_with_dims),
             })
         self.assertEqual(len(pyf.dump_metrics()), 2)
 
@@ -301,6 +313,8 @@ class TestPyformance(unittest.TestCase):
         def callme_with_dims():
             return 1
 
+        qcallme_with_dims = get_qualname(callme_with_dims)
+
         callme()
         callme()
         callme()
@@ -310,10 +324,10 @@ class TestPyformance(unittest.TestCase):
 
         self.assertEqual(
             pyf.global_registry().metadata.get_metadata(
-                'timer_dim=hello_timer.callme_with_dims_calls'),
+                'timer_dim=hello_timer.{0}_calls'.format(qcallme_with_dims)),
             {
                 'dimensions': {'timer_dim': 'hello_timer'},
-                'metric': 'callme_with_dims_calls',
+                'metric': '{0}_calls'.format(qcallme_with_dims),
             })
         self.assertEqual(len(pyf.dump_metrics()), 2)
 
