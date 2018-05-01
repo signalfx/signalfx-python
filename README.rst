@@ -230,11 +230,16 @@ metric registry data directly to SignalFx.
 
 .. code:: python
 
-    from pyformance import count_calls, gauge
+    from signalfx.pyformance import count_calls, gauge, count_calls_with_dims
     import signalfx.pyformance
 
     @count_calls
     def callme():
+        # whatever
+        pass
+    
+    @count_calls_with_dims(dimension_key="dimension_value")
+    def callme_with_dims():
         # whatever
         pass
 
@@ -243,6 +248,8 @@ metric registry data directly to SignalFx.
 
     callme()
     callme()
+    callme_with_dims()
+    callme_with_dims()
     gauge('test').set_value(42)
 
 See `examples/pyformance_usecase.py`_ for a complete code example using Pyformance.
