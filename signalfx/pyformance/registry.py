@@ -1,6 +1,7 @@
 import functools
 from .metadata import MetricMetadata
 import pyformance.registry
+import re
 import time
 from pyformance.registry import (clear, count_calls, dump_metrics,  # noqa
                                  global_registry, hist_calls, meter_calls,
@@ -9,7 +10,7 @@ from pyformance.registry import (clear, count_calls, dump_metrics,  # noqa
 
 class MetricsRegistry(pyformance.registry.MetricsRegistry):
     """An extension of the pyformance MetricsRegistry
-    which accepts and manages dimensional data that can be emitted to SignalFx
+    which accepts and manages dimensional data to emit to SignalFx
     """
     def __init__(self, clock=time):
         self.metadata = MetricMetadata()
@@ -57,6 +58,40 @@ class MetricsRegistry(pyformance.registry.MetricsRegistry):
 
 # set global registry on import to the SignalFx MetricsRegistry
 set_global_registry(MetricsRegistry())
+
+
+class RegexRegistry(MetricsRegistry):
+    """
+    An extension of the pyformance RegexRegistry
+    which accepts and manages dimensional data to emit to SignalFx
+    """
+    def __init__(self, pattern=None, clock=time):
+        super(RegexRegistry, self).__init__(clock)
+        if pattern is not None:
+            self.pattern = re.compile(pattern)
+        else:
+            self.pattern = re.compile('^$')
+
+    def _get_key(self, key):
+        matches = self.pattern.finditer(key)
+        key = '/'.join((v for match in matches for v in match.groups() if v))
+        return key
+
+    def timer(self, key, **dims):
+        return super(RegexRegistry, self).timer(self._get_key(key), **dims)
+
+    def histogram(self, key, **dims):
+        return super(RegexRegistry, self).histogram(self._get_key(key), **dims)
+
+    def counter(self, key, **dims):
+        return super(RegexRegistry, self).counter(self._get_key(key), **dims)
+
+    def gauge(self, key, gauge=None, default=float("nan"), **dims):
+        return super(RegexRegistry, self).gauge(
+            self._get_key(key), gauge=gauge, default=default, **dims)
+
+    def meter(self, key, **dims):
+        return super(RegexRegistry, self).meter(self._get_key(key), **dims)
 
 
 def counter(key, **dims):
