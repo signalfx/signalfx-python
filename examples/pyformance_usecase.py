@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '..'))
 
 # import the signalfx pyformance library
-import signalfx.pyformance  as pyf # noqa
+import signalfx.pyformance as pyf # noqa
 
 
 if __name__ == '__main__':
