@@ -31,14 +31,14 @@ if __name__ == '__main__':
 
     # @pyf.count_calls_with_dims counts the number of times
     # callme_with_dims is invoked.  The dimension
-    # ("dimension_key"="dimension_value") is included on the metric
-    @pyf.count_calls_with_dims(dimension_key="dimension_value")
+    # ('dimension_key'='dimension_value') is included on the metric
+    @pyf.count_calls_with_dims(dimension_key='dimension_value')
     def callme_with_dims():
         logging.info('Called me with dimensions!')
         # pyf.gauge() adds a gauge to the global pyformance registry
         # and accepts dimensions as keyword arguments
         pyf.gauge('demo.time2',
-                  dimension_key="dimension_value").set_value(time.time())
+                  dimension_key='dimension_value').set_value(time.time())
 
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         # calls in the signalfx pyformance library
         custom_registry.gauge(
             'demo.time2.custom',
-            dimension_key="dimension_value").set_value(time.time())
+            dimension_key='dimension_value').set_value(time.time())
 
     pyf.gauge('demo.pid').set_value(os.getpid())
 
