@@ -4,7 +4,7 @@ import pyformance.registry
 import re
 import time
 from pyformance.registry import (clear, count_calls, dump_metrics,  # noqa
-                                 global_registry, hist_calls, meter_calls,
+                                 global_registry, meter_calls,
                                  set_global_registry, time_calls)
 
 
@@ -143,6 +143,27 @@ def meter_calls_with_dims(**dims):
     return meter_wrapper
 
 
+# TODO: raise bug with pyformance on their implementation of hist_calls
+# _histogram does not have an update method so use add instead
+def hist_calls(fn):
+    """
+    Decorator to check the distribution of return values of a function.
+    :param fn: the function to be decorated
+    :type fn: C{func}
+    :return: the decorated function
+    :rtype: C{func}
+    """
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        _histogram = histogram(
+            "%s_calls" % pyformance.registry.get_qualname(fn))
+        rtn = fn(*args, **kwargs)
+        if type(rtn) in (int, float):
+            _histogram.add(rtn)
+        return rtn
+    return wrapper
+
+
 def hist_calls_with_dims(**dims):
     """decorator to check the distribution of return values of a
     function.
@@ -154,7 +175,7 @@ def hist_calls_with_dims(**dims):
                 "%s_calls" % pyformance.registry.get_qualname(fn), **dims)
             rtn = fn(*args, **kwargs)
             if type(rtn) in (int, float):
-                _histogram.update(rtn)
+                _histogram.add(rtn)
             return rtn
         return fn_wrapper
     return hist_wrapper
