@@ -22,7 +22,7 @@ class MetricMetadata(object):
         return dimensions or {}
 
     def register(self, key, **kwargs):
-        """registers metadata for a metric and returns a composite key"""
+        """Registers metadata for a metric and returns a composite key"""
         dimensions = dict((k, str(v)) for k, v in kwargs.items())
         composite_key = self._composite_name(key, dimensions)
         self._metadata[composite_key] = {
@@ -40,5 +40,5 @@ class MetricMetadata(object):
         return '.'.join(composite)
 
     def clear(self):
-        """clears the registered metadata"""
+        """Clears the registered metadata"""
         self._metadata.clear()

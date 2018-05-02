@@ -26,34 +26,34 @@ class MetricsRegistry(pyformance.registry.MetricsRegistry):
             self.metadata.register(key, **dims), metric)
 
     def counter(self, key, **dims):
-        """adds counter with dimensions to the registry"""
+        """Adds counter with dimensions to the registry"""
         return super(MetricsRegistry, self).counter(
             self.metadata.register(key, **dims))
 
     def histogram(self, key, **dims):
-        """adds histogram with dimensions to the registry"""
+        """Adds histogram with dimensions to the registry"""
         return super(MetricsRegistry, self).histogram(
             self.metadata.register(key, **dims))
 
     def gauge(self, key, gauge=None, default=float("nan"), **dims):
-        """adds gauge with dimensions to the registry"""
+        """Adds gauge with dimensions to the registry"""
         return super(MetricsRegistry, self).gauge(
             self.metadata.register(key, **dims), gauge=gauge, default=default)
 
     def meter(self, key, **dims):
-        """adds meter with dimensions to the registry"""
+        """Adds meter with dimensions to the registry"""
         return super(MetricsRegistry, self).meter(
             self.metadata.register(key, **dims))
 
     def timer(self, key, **dims):
-        """adds timer with dimensions to the registry"""
+        """Adds timer with dimensions to the registry"""
         return super(MetricsRegistry, self).timer(
             self.metadata.register(key, **dims))
 
     def clear(self):    # noqa flake8 complains that this is
                         # a redefinition of the imported clear,
                         # but obviously it isn't
-        """clears the registered metrics and metadata"""
+        """Clears the registered metrics and metadata"""
         self.metadata.clear()
         super(MetricsRegistry, self).clear()
 
@@ -65,7 +65,10 @@ set_global_registry(MetricsRegistry())
 class RegexRegistry(MetricsRegistry):
     """
     An extension of the pyformance RegexRegistry
-    which accepts and manages dimensional data to emit to SignalFx
+    which accepts and manages dimensional data to emit to SignalFx.
+    The RegexRegistry captures all api calls matching the specified
+    regex patterns and groups them together.  This is useful to avoid
+    defining a metric for each method of a REST API
     """
     def __init__(self, pattern=None, clock=time):
         super(RegexRegistry, self).__init__(clock)
@@ -80,49 +83,56 @@ class RegexRegistry(MetricsRegistry):
         return key
 
     def timer(self, key, **dims):
+        """Adds timer with dimensions to the registry"""
         return super(RegexRegistry, self).timer(self._get_key(key), **dims)
 
     def histogram(self, key, **dims):
+        """Adds histogram with dimensions to the registry"""
         return super(RegexRegistry, self).histogram(self._get_key(key), **dims)
 
     def counter(self, key, **dims):
+        """Adds counter with dimensions to the registry"""
         return super(RegexRegistry, self).counter(self._get_key(key), **dims)
 
     def gauge(self, key, gauge=None, default=float("nan"), **dims):
+        """Adds gauge with dimensions to the registry"""
         return super(RegexRegistry, self).gauge(
             self._get_key(key), gauge=gauge, default=default, **dims)
 
     def meter(self, key, **dims):
+        """Adds meter with dimensions to the registry"""
         return super(RegexRegistry, self).meter(self._get_key(key), **dims)
 
 
 def counter(key, **dims):
-    """adds counter with dimensions to the global pyformance registry"""
+    """Adds counter with dimensions to the global pyformance registry"""
     return global_registry().counter(key, **dims)
 
 
 def histogram(key, **dims):
-    """adds histogram with dimensions to the global pyformance registry"""
+    """Adds histogram with dimensions to the global pyformance registry"""
     return global_registry().histogram(key, **dims)
 
 
 def meter(key, **dims):
-    """adds meter with dimensions to the global pyformance registry"""
+    """Adds meter with dimensions to the global pyformance registry"""
     return global_registry().meter(key, **dims)
 
 
 def timer(key, **dims):
-    """adds timer with dimensions to the global pyformance registry"""
+    """Adds timer with dimensions to the global pyformance registry"""
     return global_registry().timer(key, **dims)
 
 
 def gauge(key, gauge=None, default=float("nan"), **dims):
-    """adds gauge with dimensions to the global pyformance registry"""
+    """Adds gauge with dimensions to the global pyformance registry"""
     return global_registry().gauge(key, gauge=gauge, default=default, **dims)
 
 
 def count_calls_with_dims(**dims):
-    """decorator to track the number of times a function is called."""
+    """Decorator to track the number of times a function is called
+    with with dimensions.
+    """
     def counter_wrapper(fn):
         @functools.wraps(fn)
         def fn_wrapper(*args, **kwargs):
@@ -134,7 +144,9 @@ def count_calls_with_dims(**dims):
 
 
 def meter_calls_with_dims(**dims):
-    """decorator to track the rate at which a function is called."""
+    """Decorator to track the rate at which a function is called
+    with dimensions.
+    """
     def meter_wrapper(fn):
         @functools.wraps(fn)
         def fn_wrapper(*args, **kwargs):
@@ -150,10 +162,6 @@ def meter_calls_with_dims(**dims):
 def hist_calls(fn):
     """
     Decorator to check the distribution of return values of a function.
-    :param fn: the function to be decorated
-    :type fn: C{func}
-    :return: the decorated function
-    :rtype: C{func}
     """
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
@@ -167,8 +175,8 @@ def hist_calls(fn):
 
 
 def hist_calls_with_dims(**dims):
-    """decorator to check the distribution of return values of a
-    function.
+    """Decorator to check the distribution of return values of a
+    function with dimensions.
     """
     def hist_wrapper(fn):
         @functools.wraps(fn)
@@ -184,7 +192,7 @@ def hist_calls_with_dims(**dims):
 
 
 def time_calls_with_dims(**dims):
-    """decorator to time the execution of the function."""
+    """Decorator to time the execution of the function with dimensions."""
     def time_wrapper(fn):
         @functools.wraps(fn)
         def fn_wrapper(*args, **kwargs):
