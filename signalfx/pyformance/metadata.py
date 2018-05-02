@@ -14,12 +14,12 @@ class MetricMetadata(object):
         self._metadata = {}
 
     def get_metadata(self, key):
-        """returns metadata for the specified key"""
+        """Returns metadata for the specified key"""
         dimensions = self._metadata.get(key)
         return dimensions or {}
 
-    def register(self, key, gauge=None, **kwargs):
-        """registers metadata for a metric and returns a composit key"""
+    def register(self, key, **kwargs):
+        """registers metadata for a metric and returns a composite key"""
         dimensions = dict((k, str(v)) for k, v in kwargs.items())
         composite_key = self._composite_name(key, dimensions)
         self._metadata[composite_key] = {
