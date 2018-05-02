@@ -1,3 +1,5 @@
+# Copyright (C) 2018 SignalFx, Inc. All rights reserved.
+
 import functools
 from .metadata import MetricMetadata
 import pyformance.registry

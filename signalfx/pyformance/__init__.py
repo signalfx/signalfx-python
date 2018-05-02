@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2014 SignalFuse, Inc. All rights reserved.
-# Copyright (C) 2015-2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2015-2018 SignalFx, Inc. All rights reserved.
 
 __import__('pkg_resources').declare_namespace(__name__)
 

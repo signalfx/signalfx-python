@@ -1,3 +1,5 @@
+# Copyright (C) 2018 SignalFx, Inc. All rights reserved.
+
 import logging
 from pyformance.reporters import reporter
 import signalfx

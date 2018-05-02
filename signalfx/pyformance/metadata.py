@@ -1,3 +1,6 @@
+# Copyright (C) 2018 SignalFx, Inc. All rights reserved.
+
+
 class MetricMetadata(object):
     """Metric dimensions metadata repository.
 

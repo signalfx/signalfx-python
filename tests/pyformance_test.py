@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2018 SignalFx, Inc. All rights reserved.
 
 from pyformance.registry import get_qualname
 import os
