@@ -230,8 +230,8 @@ metric registry data directly to SignalFx.
 
 .. code:: python
 
-    from signalfx.pyformance import count_calls, gauge, count_calls_with_dims
-    import signalfx.pyformance
+    from signalfx.pyformance import (count_calls, count_calls_with_dims,
+                                     gauge, SignalFxReporter)
 
     @count_calls
     def callme():
@@ -243,7 +243,7 @@ metric registry data directly to SignalFx.
         # whatever
         pass
 
-    sfx = signalfx.pyformance.SignalFxReporter(token='MY_TOKEN')
+    sfx = SignalFxReporter(token='MY_TOKEN')
     sfx.start()
 
     callme()
