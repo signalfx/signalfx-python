@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper](#1019---2018-05-03-dimension-support-in-pyformance-wrapper)
 - [[1.0.18] - 2018-03-15: Compression of datapoint payloads](#1018---2018-03-15-compression-of-datapoint-payloads)
 - [[1.0.17] - 2018-03-02: Support for immediate SignalFlow results](#1017---2018-03-02-support-for-immediate-signalflow-results)
 - [[1.0.16] - 2017-03-24: SignalFlow streaming performance](#1016---2017-03-24-signalflow-streaming-performance)
@@ -17,6 +18,12 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
+#### [1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper
+
+This release enhances the SignalFx pyformance package and extends
+the Pyformance registry to support dimensional metadata. Please
+refer to the README and examples for more information on changes to
+the pyformance package.
 
 #### [1.0.18] - 2018-03-15: Compression of datapoint payloads
 
