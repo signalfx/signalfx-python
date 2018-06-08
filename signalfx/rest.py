@@ -22,6 +22,10 @@ class SignalFxRestClient(object):
     _MTS_ENDPOINT_SUFFIX = 'v2/metrictimeseries'
     _TAG_ENDPOINT_SUFFIX = 'v2/tag'
     _ORGANIZATION_ENDPOINT_SUFFIX = 'v2/organization'
+    _MULTI_ORGANIZATION_ENDPOINT_SUFFIX = 'v2/user/organizations'
+    _CHART_ENDPOINT_SUFFIX = 'v2/chart'
+    _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
+    _DASHBOARD_GROUP_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
 
     def __init__(self, token, endpoint=constants.DEFAULT_API_ENDPOINT,
                  timeout=constants.DEFAULT_TIMEOUT):
@@ -136,6 +140,26 @@ class SignalFxRestClient(object):
         timeout = timeout or self._timeout
         resp = self._get(self._u(object_endpoint, object_name),
                          session=self._session, timeout=timeout)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_object_by_id(self, object_endpoint, object_id):
+        """
+        generic function to get object (dashboard, chart, etc.) by name from SignalFx.
+
+        Args:
+            object_endpoint (string): API endpoint suffix (e.g. 'v2/chart')
+            object_id(string): the id of the object assigned by the UI, you will need to retrieve this somehow.
+
+        Returns:
+            dictionary of response
+        """
+        resp = self._get(self._u(object_endpoint + '/' + object_id), **kwargs)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _create_object(self, object_endpoint, object):
+        resp = self._post(self._u(object_endpoint), data=object)
         resp.raise_for_status()
         return resp.json()
 
@@ -344,7 +368,27 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         return resp.json()
 
+    def get_organizations(self, **kwargs):
+        """Get all of the organizations that the user belongs to
+
+        Returns:
+            A dictionary containing all the organizations that the user belongs to
+        """
+        resp = self._get(self._u(self._MULTI_ORGANIZATION_ENDPOINT_SUFFIX), **kwargs)
+        resp.raise_for_status()
+        return resp.json()
+
     # functionality related to detectors
+    def get_detector(self, detector_id, **kwargs):
+        """Retrieve the single (v2) detector matching the given id.
+
+        The call will fail if you attempt to retrieve a v1 detector.
+
+        Returns:
+            A v2 detector as a JSON object (usable like a dictionary).
+        """
+        return self._get_object_by_id(self._CHART_ENDPOINT_SUFFIX, detector_id)
+
     def get_detectors(self, name=None, tags=None, batch_size=100, **kwargs):
         """Retrieve all (v2) detectors matching the given name; all (v2)
         detectors otherwise.
@@ -395,10 +439,7 @@ class SignalFxRestClient(object):
         Returns:
             dictionary of the response (created detector model).
         """
-        resp = self._post(self._u(self._DETECTOR_ENDPOINT_SUFFIX),
-                          data=detector)
-        resp.raise_for_status()
-        return resp.json()
+        return self._create_object(self._DETECTOR_ENDPOINT_SUFFIX, detector)
 
     def update_detector(self, detector_id, detector):
         """Update an existing detector.
@@ -427,3 +468,124 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         # successful delete returns 204, which has no response json
         return resp
+
+    # Functionality related to charts
+    def get_chart(self, chart_id, **kwargs):
+        """Retrieve the single (v2) chart matching the given id.
+
+        Returns:
+            A (v2) chart as a JSON object (usable like a dictionary).
+        """
+        return self._get_object_by_id(self._CHART_ENDPOINT_SUFFIX, chart_id)
+
+    def get_charts(self, name=None, tags=None, batch_size=128, **kwargs):
+        """Retrieve all (v2) charts matching the given name; all (v2) charts up to batch_size otherwise.
+
+        Note that this operation may be expensive.
+        """
+        charts = []
+        offset = 0
+        while True:
+            resp = self._get(
+                self._u(self._CHART_ENDPOINT_SUFFIX),
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name,
+                    'tags': tags or []
+                },
+                **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            charts += data['results']
+            if len(charts) == data['count']:
+                break
+            offset = len(charts)
+        return charts
+
+    def create_chart(self, chart):
+        """Creates a new chart.
+
+        Args:
+            chart (object): the chart model object. Will be serialized as JSON.
+        Returns:
+            dictionary of the response (created chart model).
+        """
+        return self._create_object(self._CHART_ENDPOINT_SUFFIX, chart)
+
+    # Functionality related to dashboards
+    def get_dashboard(self, dashboard_id, **kwargs):
+        """Retrieve the single (v2) chart matching the given id."""
+        return self._get_object_by_id(self._DASHBOARD_ENDPOINT_SUFFIX, dashboard_id)
+
+    def get_dashboards(self, name=None, batch_size=128, **kwargs):
+        """Retrieve all (v2) dashboards matching the given name; all (v2) dashboards up to batch_size otherwise.
+
+        Note that this operation may be expensive.
+        """
+        dashboards = []
+        offset = 0
+        while True:
+            resp = self._get(
+                self._u(self._DASHBOARD_ENDPOINT_SUFFIX),
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name
+                },
+                **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            dashboards += data['results']
+            if len(dashboards) == data['count']:
+                break
+            offset = len(dashboards)
+        return dashboards
+
+    def create_dashboard(self, dashboard):
+        """Creates a new dashboard.
+
+        Args:
+            dashboard (object): the dashboard model object. Will be serialized as JSON.
+
+        Returns:
+            dictionary of the response (created dashboard model).
+        """
+        return self._create_object(self._DASHBOARD_ENDPOINT_SUFFIX, dashboard)
+
+    # Functionality related to dashboard groups
+    def get_dashboard_groups(self, name=None, batch_size=128, **kwargs):
+        """Retrieve all (v2) dashboard groups matching the given name;
+           all (v2) dashboard groups up to batch_size otherwise.
+
+        Note that this operation may be expensive.
+        """
+        dashboard_groups = []
+        offset = 0
+        while True:
+            resp = self._get(
+                self._u(self._DASHBOARD_GROUP_ENDPOINT_SUFFIX),
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name
+                },
+                **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            dashboard_groups += data['results']
+            if len(dashboard_groups) == data['count']:
+                break
+            offset = len(dashboard_groups)
+        return dashboard_groups
+
+    def create_dashboard_group(self, dashboard_group):
+        """Creates a new dashboard group.
+
+        Args:
+            dashboard_group (object): the dashboard group model object. Will be serialized as JSON.
+
+        Returns:
+            dictionary of the response (created dashboard group model).
+        """
+        return self._create_object(self._DASHBOARD_GROUP_ENDPOINT_SUFFIX, dashboard_group)

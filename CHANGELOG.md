@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.0.20] - 2018-06-07: Added support for several v2 api functions](#1020---2018-06-07-increased-v2-rest-api-support)
 - [[1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper](#1019---2018-05-03-dimension-support-in-pyformance-wrapper)
 - [[1.0.18] - 2018-03-15: Compression of datapoint payloads](#1018---2018-03-15-compression-of-datapoint-payloads)
 - [[1.0.17] - 2018-03-02: Support for immediate SignalFlow results](#1017---2018-03-02-support-for-immediate-signalflow-results)
@@ -17,6 +18,16 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.0.20] - 2018-06-07: Increased v2 REST API support
+
+This release increases the amount of v2 REST API functions that 
+are supported by the library. Notable changes include the ability
+to create certain objects like charts, dashboards, and dashboard groups
+as well as the ability to retrieve certain objects by their ids.
+
+This release is the first in a series whose aim is to provide the 
+entire feature set of the v2 API within Python itself.
 
 #### [1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper
 
