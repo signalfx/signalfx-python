@@ -30,13 +30,15 @@ class SignalFlowClient(object):
         return dict((k, v) for k, v in kwargs.items() if v is not None)
 
     def execute(self, program, start=None, stop=None, resolution=None,
-                max_delay=None, persistent=False, immediate=False):
+                max_delay=None, persistent=False, immediate=False,
+                disable_all_metric_publishes=None):
         """Execute the given SignalFlow program and stream the output back."""
         params = self._get_params(start=start, stop=stop,
                                   resolution=resolution,
                                   maxDelay=max_delay,
                                   persistent=persistent,
-                                  immediate=immediate)
+                                  immediate=immediate,
+                                  disableAllMetricPublishes=disable_all_metric_publishes)
 
         def exec_fn(since=None):
             if since:
