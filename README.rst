@@ -41,25 +41,33 @@ you access to the API client that you want:
 
     import signalfx
 
-    sfx = signalfx.SignalFx()
+    sfx = signalfx.SignalFx(api_endpoint='https://api.{REALM}.signalfx.com',
+            ingest_endpoint='https://ingest.{REALM}.signalfx.com',
+            stream_endpoint='https://stream.{REALM}.signalfx.com')
+
 
     # For the ingest API
-    ingest = sfx.ingest('ORG_ACCESS_TOKEN')
+    ingest = sfx.ingest('ORG_TOKEN')
 
     # For the REST API
-    rest = sfx.rest('USER_ACCESS_TOKEN')
+    rest = sfx.rest('API_TOKEN')
 
     # For the SignalFlow API
-    flow = sfx.signalflow('USER_ACCESS_TOKEN')
+    flow = sfx.signalflow('ACCESS_TOKEN')
 
-As you may have noticed, you need to specify an access token when requesting
+If no endpoints are set manually, this library uses the ``us0`` realm by default. 
+If you are not in this realm, you will need to explicitly set the
+endpoint urls above. To determine if you are in a different realm and need to
+explicitly set the endpoints, check your profile page in the SignalFx 
+web application. You will also need to specify an access token when requesting
 one of those clients. For the ingest client, you need to specify your
-organization or team's API access token (which can be obtained from the
-SignalFx organization you want to report data into). For the REST API and
-SignalFlow API clients, you must use your user access token. For more
+organization access token (which can be obtained from the
+SignalFx organization you want to report data into). For the REST API,
+you must use your user access token. For the SignalFlow client, either an
+organization access token or a user access token may be used. For more
 information on access tokens, see the API's `Authentication documentation`_.
 
-.. _Authentication documentation: https://developers.signalfx.com/docs/authentication
+.. _Authentication documentation: https://developers.signalfx.com/basics/authentication.html
 
 Reporting data
 ~~~~~~~~~~~~~~
@@ -70,7 +78,7 @@ Basic usage of the library for reporting data goes as follows:
 
     import signalfx
 
-    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
+    with signalfx.SignalFx().ingest('ORG_TOKEN') as sfx:
         sfx.send(
             gauges=[
               {'metric': 'myfunc.time',
@@ -102,7 +110,7 @@ ensure the queue is fully drained.**
 
     import signalfx
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+    sfx = signalfx.SignalFx().ingest('ORG_TOKEN')
     try:
         sfx.send(...)
         sfx.send(...)
@@ -138,7 +146,7 @@ of string to string key/value pairs representing the dimensions:
 
     import signalfx
 
-    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
+    with signalfx.SignalFx().ingest('ORG_TOKEN') as sfx:
         sfx.send(
             gauges=[
               {
@@ -166,7 +174,7 @@ supplied as well.
 
     import signalfx
 
-    with signalfx.SignalFx().ingest('MY_TOKEN') as sfx:
+    with signalfx.SignalFx().ingest('ORG_TOKEN') as sfx:
         sfx.send_event(
             event_type='deployments',
             dimensions={
@@ -186,7 +194,7 @@ metadata and tags. Deleting tags is also supported.
 
     import signalfx
 
-    with signalfx.SignalFx().rest('MY_TOKEN') as sfx:
+    with signalfx.SignalFx().rest('ORG_TOKEN') as sfx:
         sfx.update_tag('tag_name',
                        description='An example tag',
                        custom_properties={'version': 'some_number'})
@@ -203,7 +211,7 @@ unique ID of the current host as an extra dimension. For example,
     import signalfx
     from signalfx.aws import AWS_ID_DIMENSION, get_aws_unique_id
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+    sfx = signalfx.SignalFx().ingest('ORG_TOKEN')
 
     # This dimension will be added to all datapoints sent.
     sfx.add_dimensions({AWS_ID_DIMENSION: get_aws_unique_id()})
@@ -243,7 +251,7 @@ metric registry data directly to SignalFx.
         # whatever
         pass
 
-    sfx = SignalFxReporter(token='MY_TOKEN')
+    sfx = SignalFxReporter(token='ORG_TOKEN')
     sfx.start()
 
     callme()
@@ -267,9 +275,10 @@ Developers documentation:
 * `SignalFlow Overview`_
 * `Getting started with the SignalFlow API`_
 
-.. _SignalFlow Overview: https://developers.signalfx.com/docs/signalflow-overview
-.. _Getting started with the SignalFlow API: https://developers.signalfx.com/docs/getting-started-with-the-signalflow-api
+.. _SignalFlow Overview: https://developers.signalfx.com/signalflow_analytics/signalflow_overview.html
+.. _SignalFlow API Reference: https://developers.signalfx.com/signalflow_reference.html 
 
+The SignalFlow client accepts either an Organization Access Token or a User API Token.
 Executing a SignalFlow program is very simple with this client library:
 
 .. code:: python
@@ -277,7 +286,7 @@ Executing a SignalFlow program is very simple with this client library:
     import signalfx
 
     program = "data('cpu.utilization').mean().publish()"
-    with signalfx.SignalFx().signalflow('MY_TOKEN') as flow:
+    with signalfx.SignalFx().signalflow('ACCESS_TOKEN') as flow:
         print('Executing {0} ...'.format(program))
         computation = flow.execute(program)
         for msg in computation.stream():
@@ -337,7 +346,7 @@ when your program exits:
     import atexit
     import signalfx
 
-    sfx = signalfx.SignalFx().ingest('MY_TOKEN')
+    sfx = signalfx.SignalFx().ingest('ORG_TOKEN')
     atexit.register(sfx.stop)
 
 SSLError when working with tags, metrics, dimensions, metrictimeseries, organization
