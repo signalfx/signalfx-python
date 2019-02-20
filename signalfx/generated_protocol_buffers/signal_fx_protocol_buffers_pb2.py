@@ -20,9 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='signal_fx_protocol_buffers.proto',
   package='com.signalfx.metrics.protobuf',
   syntax='proto2',
-  serialized_pb=_b('\n signal_fx_protocol_buffers.proto\x12\x1d\x63om.signalfx.metrics.protobuf\"@\n\x05\x44\x61tum\x12\x10\n\x08strValue\x18\x01 \x01(\t\x12\x13\n\x0b\x64oubleValue\x18\x02 \x01(\x01\x12\x10\n\x08intValue\x18\x03 \x01(\x03\"\'\n\tDimension\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xad\x02\n\tDataPoint\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\x0e\n\x06metric\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x33\n\x05value\x18\x04 \x01(\x0b\x32$.com.signalfx.metrics.protobuf.Datum\x12=\n\nmetricType\x18\x05 \x01(\x0e\x32).com.signalfx.metrics.protobuf.MetricType\x12<\n\ndimensions\x18\x06 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.Dimension\x12;\n\nproperties\x18\x07 \x03(\x0b\x32\'.com.signalfx.metrics.protobuf.Property\"V\n\x16\x44\x61taPointUploadMessage\x12<\n\ndatapoints\x18\x01 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.DataPoint\"T\n\nPointValue\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x33\n\x05value\x18\x04 \x01(\x0b\x32$.com.signalfx.metrics.protobuf.Datum\"T\n\x08Property\x12\x0b\n\x03key\x18\x01 \x01(\t\x12;\n\x05value\x18\x02 \x01(\x0b\x32,.com.signalfx.metrics.protobuf.PropertyValue\"[\n\rPropertyValue\x12\x10\n\x08strValue\x18\x01 \x01(\t\x12\x13\n\x0b\x64oubleValue\x18\x02 \x01(\x01\x12\x10\n\x08intValue\x18\x03 \x01(\x03\x12\x11\n\tboolValue\x18\x04 \x01(\x08\"\xe8\x01\n\x05\x45vent\x12\x11\n\teventType\x18\x01 \x02(\t\x12<\n\ndimensions\x18\x02 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.Dimension\x12;\n\nproperties\x18\x03 \x03(\x0b\x32\'.com.signalfx.metrics.protobuf.Property\x12>\n\x08\x63\x61tegory\x18\x04 \x01(\x0e\x32,.com.signalfx.metrics.protobuf.EventCategory\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\"J\n\x12\x45ventUploadMessage\x12\x34\n\x06\x65vents\x18\x01 \x03(\x0b\x32$.com.signalfx.metrics.protobuf.Event*F\n\nMetricType\x12\t\n\x05GAUGE\x10\x00\x12\x0b\n\x07\x43OUNTER\x10\x01\x12\x08\n\x04\x45NUM\x10\x02\x12\x16\n\x12\x43UMULATIVE_COUNTER\x10\x03*\x82\x01\n\rEventCategory\x12\x12\n\x0cUSER_DEFINED\x10\xc0\x84=\x12\x0b\n\x05\x41LERT\x10\xa0\x8d\x06\x12\x0b\n\x05\x41UDIT\x10\xc0\x9a\x0c\x12\t\n\x03JOB\x10\xe0\xa7\x12\x12\x0e\n\x08\x43OLLECTD\x10\x80\xb5\x18\x12\x17\n\x11SERVICE_DISCOVERY\x10\xa0\xc2\x1e\x12\x0f\n\tEXCEPTION\x10\xe0\xdc*')
+  serialized_pb=_b('\n signal_fx_protocol_buffers.proto\x12\x1d\x63om.signalfx.metrics.protobuf\"@\n\x05\x44\x61tum\x12\x10\n\x08strValue\x18\x01 \x01(\t\x12\x13\n\x0b\x64oubleValue\x18\x02 \x01(\x01\x12\x10\n\x08intValue\x18\x03 \x01(\x03\"\'\n\tDimension\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xf0\x01\n\tDataPoint\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\x0e\n\x06metric\x18\x02 \x01(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x33\n\x05value\x18\x04 \x01(\x0b\x32$.com.signalfx.metrics.protobuf.Datum\x12=\n\nmetricType\x18\x05 \x01(\x0e\x32).com.signalfx.metrics.protobuf.MetricType\x12<\n\ndimensions\x18\x06 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.Dimension\"V\n\x16\x44\x61taPointUploadMessage\x12<\n\ndatapoints\x18\x01 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.DataPoint\"T\n\nPointValue\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x33\n\x05value\x18\x04 \x01(\x0b\x32$.com.signalfx.metrics.protobuf.Datum\"T\n\x08Property\x12\x0b\n\x03key\x18\x01 \x01(\t\x12;\n\x05value\x18\x02 \x01(\x0b\x32,.com.signalfx.metrics.protobuf.PropertyValue\"[\n\rPropertyValue\x12\x10\n\x08strValue\x18\x01 \x01(\t\x12\x13\n\x0b\x64oubleValue\x18\x02 \x01(\x01\x12\x10\n\x08intValue\x18\x03 \x01(\x03\x12\x11\n\tboolValue\x18\x04 \x01(\x08\"\xe8\x01\n\x05\x45vent\x12\x11\n\teventType\x18\x01 \x02(\t\x12<\n\ndimensions\x18\x02 \x03(\x0b\x32(.com.signalfx.metrics.protobuf.Dimension\x12;\n\nproperties\x18\x03 \x03(\x0b\x32\'.com.signalfx.metrics.protobuf.Property\x12>\n\x08\x63\x61tegory\x18\x04 \x01(\x0e\x32,.com.signalfx.metrics.protobuf.EventCategory\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\"J\n\x12\x45ventUploadMessage\x12\x34\n\x06\x65vents\x18\x01 \x03(\x0b\x32$.com.signalfx.metrics.protobuf.Event*F\n\nMetricType\x12\t\n\x05GAUGE\x10\x00\x12\x0b\n\x07\x43OUNTER\x10\x01\x12\x08\n\x04\x45NUM\x10\x02\x12\x16\n\x12\x43UMULATIVE_COUNTER\x10\x03*\x8f\x01\n\rEventCategory\x12\x12\n\x0cUSER_DEFINED\x10\xc0\x84=\x12\x0b\n\x05\x41LERT\x10\xa0\x8d\x06\x12\x0b\n\x05\x41UDIT\x10\xc0\x9a\x0c\x12\t\n\x03JOB\x10\xe0\xa7\x12\x12\x0e\n\x08\x43OLLECTD\x10\x80\xb5\x18\x12\x17\n\x11SERVICE_DISCOVERY\x10\xa0\xc2\x1e\x12\x0f\n\tEXCEPTION\x10\xe0\xdc*\x12\x0b\n\x05\x41GENT\x10\x80\x89z')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _METRICTYPE = _descriptor.EnumDescriptor(
   name='MetricType',
@@ -49,8 +48,8 @@ _METRICTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1142,
-  serialized_end=1212,
+  serialized_start=1081,
+  serialized_end=1151,
 )
 _sym_db.RegisterEnumDescriptor(_METRICTYPE)
 
@@ -89,11 +88,15 @@ _EVENTCATEGORY = _descriptor.EnumDescriptor(
       name='EXCEPTION', index=6, number=700000,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='AGENT', index=7, number=2000000,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1215,
-  serialized_end=1345,
+  serialized_start=1154,
+  serialized_end=1297,
 )
 _sym_db.RegisterEnumDescriptor(_EVENTCATEGORY)
 
@@ -109,6 +112,7 @@ JOB = 300000
 COLLECTD = 400000
 SERVICE_DISCOVERY = 500000
 EXCEPTION = 700000
+AGENT = 2000000
 
 
 
@@ -125,21 +129,21 @@ _DATUM = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='doubleValue', full_name='com.signalfx.metrics.protobuf.Datum.doubleValue', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='intValue', full_name='com.signalfx.metrics.protobuf.Datum.intValue', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -170,14 +174,14 @@ _DIMENSION = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='com.signalfx.metrics.protobuf.Dimension.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -208,49 +212,42 @@ _DATAPOINT = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='metric', full_name='com.signalfx.metrics.protobuf.DataPoint.metric', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='timestamp', full_name='com.signalfx.metrics.protobuf.DataPoint.timestamp', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='com.signalfx.metrics.protobuf.DataPoint.value', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='metricType', full_name='com.signalfx.metrics.protobuf.DataPoint.metricType', index=4,
       number=5, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dimensions', full_name='com.signalfx.metrics.protobuf.DataPoint.dimensions', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='properties', full_name='com.signalfx.metrics.protobuf.DataPoint.properties', index=6,
-      number=7, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -264,7 +261,7 @@ _DATAPOINT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=175,
-  serialized_end=476,
+  serialized_end=415,
 )
 
 
@@ -281,7 +278,7 @@ _DATAPOINTUPLOADMESSAGE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -294,8 +291,8 @@ _DATAPOINTUPLOADMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=478,
-  serialized_end=564,
+  serialized_start=417,
+  serialized_end=503,
 )
 
 
@@ -312,14 +309,14 @@ _POINTVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='com.signalfx.metrics.protobuf.PointValue.value', index=1,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -332,8 +329,8 @@ _POINTVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=566,
-  serialized_end=650,
+  serialized_start=505,
+  serialized_end=589,
 )
 
 
@@ -350,14 +347,14 @@ _PROPERTY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='com.signalfx.metrics.protobuf.Property.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -370,8 +367,8 @@ _PROPERTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=652,
-  serialized_end=736,
+  serialized_start=591,
+  serialized_end=675,
 )
 
 
@@ -388,28 +385,28 @@ _PROPERTYVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='doubleValue', full_name='com.signalfx.metrics.protobuf.PropertyValue.doubleValue', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='intValue', full_name='com.signalfx.metrics.protobuf.PropertyValue.intValue', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='boolValue', full_name='com.signalfx.metrics.protobuf.PropertyValue.boolValue', index=3,
       number=4, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -422,8 +419,8 @@ _PROPERTYVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=738,
-  serialized_end=829,
+  serialized_start=677,
+  serialized_end=768,
 )
 
 
@@ -440,35 +437,35 @@ _EVENT = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='dimensions', full_name='com.signalfx.metrics.protobuf.Event.dimensions', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='properties', full_name='com.signalfx.metrics.protobuf.Event.properties', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='category', full_name='com.signalfx.metrics.protobuf.Event.category', index=3,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=1000000,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='timestamp', full_name='com.signalfx.metrics.protobuf.Event.timestamp', index=4,
       number=5, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -481,8 +478,8 @@ _EVENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=832,
-  serialized_end=1064,
+  serialized_start=771,
+  serialized_end=1003,
 )
 
 
@@ -499,7 +496,7 @@ _EVENTUPLOADMESSAGE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -512,14 +509,13 @@ _EVENTUPLOADMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1066,
-  serialized_end=1140,
+  serialized_start=1005,
+  serialized_end=1079,
 )
 
 _DATAPOINT.fields_by_name['value'].message_type = _DATUM
 _DATAPOINT.fields_by_name['metricType'].enum_type = _METRICTYPE
 _DATAPOINT.fields_by_name['dimensions'].message_type = _DIMENSION
-_DATAPOINT.fields_by_name['properties'].message_type = _PROPERTY
 _DATAPOINTUPLOADMESSAGE.fields_by_name['datapoints'].message_type = _DATAPOINT
 _POINTVALUE.fields_by_name['value'].message_type = _DATUM
 _PROPERTY.fields_by_name['value'].message_type = _PROPERTYVALUE
@@ -538,6 +534,7 @@ DESCRIPTOR.message_types_by_name['Event'] = _EVENT
 DESCRIPTOR.message_types_by_name['EventUploadMessage'] = _EVENTUPLOADMESSAGE
 DESCRIPTOR.enum_types_by_name['MetricType'] = _METRICTYPE
 DESCRIPTOR.enum_types_by_name['EventCategory'] = _EVENTCATEGORY
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Datum = _reflection.GeneratedProtocolMessageType('Datum', (_message.Message,), dict(
   DESCRIPTOR = _DATUM,
