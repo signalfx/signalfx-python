@@ -1,0 +1,40 @@
+{
+  "authorizedWriters" : {
+    "teams" : [ ],
+    "users" : [ ]
+  },
+  "created" : 1550595873886,
+  "creator" : "DzYcn5sAYAA",
+  "customProperties" : { },
+  "description" : "SAMPLE: sample",
+  "id" : "DzyF3vbAcCw",
+  "labelResolutions" : {
+    "sample" : 1000
+  },
+  "lastUpdated" : 1550595879283,
+  "lastUpdatedBy" : "DzYcn5sAYAA",
+  "maxDelay" : 20000,
+  "name" : "SAMPLE: sample",
+  "overMTSLimit" : false,
+  "packageSpecifications" : "",
+  "programText" : "sample = data('sample.sample_time_ms.99percentile', rollup=None, filter=(filter('host_env', 'prod') and filter('host_type', 'foobox') and filter('service', 'foo-srv'))).mean(by=['service'])\ndetect(on=when(sample > 10000, lasting=None), off=None).publish(\"sample\")\n",
+  "rules" : [ {
+    "description" : "",
+    "detectLabel" : "sample",
+    "disabled" : false,
+    "notifications" : [ {
+      "type" : "Slack",
+      "channel" : "testing-cory",
+      "credentialId" : "DzyC0EyAYAA"
+    } ],
+    "parameterizedBody" : "[sample](http://example.com) for {{dimensions.service}}\n",
+    "parameterizedSubject" : "SAMPLE: sample",
+    "runbookUrl" : "",
+    "severity" : "Critical",
+    "tip" : ""
+  } ],
+  "tags" : [ ],
+  "teams" : [ "DzyC0EyAYAA" ],
+  "timezone" : null,
+  "visualizationOptions" : null
+}

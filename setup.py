@@ -11,6 +11,8 @@ with open('signalfx/version.py') as f:
 with open('README.rst') as readme:
     long_description = readme.read()
 
+test_requirements = ['httmock']
+
 with open('requirements.txt') as f:
     requirements = [line.strip() for line in f.readlines()]
 
@@ -24,6 +26,7 @@ setup(
     long_description=long_description,
     zip_safe=True,
     packages=find_packages(),
+    test_requires=test_requirements,
     install_requires=requirements,
     classifiers=[
         'Operating System :: OS Independent',

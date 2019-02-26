@@ -19,6 +19,7 @@ class SignalFxRestClient(object):
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
+    _INCIDENT_ENDPOINT_SUFFIX = 'v2/incident'
     _MTS_ENDPOINT_SUFFIX = 'v2/metrictimeseries'
     _TAG_ENDPOINT_SUFFIX = 'v2/tag'
     _ORGANIZATION_ENDPOINT_SUFFIX = 'v2/organization'
@@ -345,6 +346,13 @@ class SignalFxRestClient(object):
         return resp.json()
 
     # functionality related to detectors
+    def get_detector(self, id, **kwargs):
+        """"Retrieve a (v2) detector by id.
+        """
+        resp = self._get_object_by_name(self._DETECTOR_ENDPOINT_SUFFIX, id,
+                                        **kwargs)
+        return resp
+
     def get_detectors(self, name=None, tags=None, batch_size=100, **kwargs):
         """Retrieve all (v2) detectors matching the given name; all (v2)
         detectors otherwise.
@@ -426,4 +434,49 @@ class SignalFxRestClient(object):
                             **kwargs)
         resp.raise_for_status()
         # successful delete returns 204, which has no response json
+        return resp
+
+    def get_detector_incidents(self, id, **kwargs):
+        """Gets all incidents for a detector
+        """
+        resp = self._get(
+            self._u(self._DETECTOR_ENDPOINT_SUFFIX, id, 'incidents'),
+            None,
+            **kwargs
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    # functionality related to incidents
+    def get_incident(self, id, **kwargs):
+        """"Retrieve a (v2) incident by id.
+        """
+        resp = self._get_object_by_name(self._INCIDENT_ENDPOINT_SUFFIX, id,
+                                        **kwargs)
+        return resp
+
+    def get_incidents(self, offset=0, limit=None, include_resolved=False, **kwargs):
+        """Retrieve all (v2) incidents.
+        """
+        resp = self._get(
+            self._u(self._INCIDENT_ENDPOINT_SUFFIX),
+            params={
+                'offset': offset,
+                'limit': limit,
+                'include_resolved': str(include_resolved).lower(),
+            },
+            **kwargs)
+
+        resp.raise_for_status()
+        return resp.json()
+
+    def clear_incident(self, id, **kwargs):
+        """Clear an incident.
+        """
+        resp = self._put(
+            self._u(self._INCIDENT_ENDPOINT_SUFFIX, id, 'clear'),
+            None,
+            **kwargs
+        )
+        resp.raise_for_status()
         return resp
