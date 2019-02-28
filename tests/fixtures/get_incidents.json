@@ -1,0 +1,124 @@
+[ {
+  "active" : true,
+  "anomalyState" : "ANOMALOUS",
+  "detectLabel" : "Farts 2",
+  "detectorId" : "D0V9boGAgAA",
+  "events" : [ {
+    "anomalyState" : "ANOMALOUS",
+    "detectLabel" : "Farts 2",
+    "detectorId" : "D0V9boGAgAA",
+    "detectorName" : "Farts 2",
+    "event_annotations" : {
+      "sfui_incidentInformation" : "[{\"selectedIdentifiers\":[\"limit_above_27\",\"A\"],\"conditionIdentifier\":\"A_above_limit_above_27_immediately\",\"readableCondition\":\"The value of cpu.utilization is above 0.1.\"}]"
+    },
+    "id" : "D0WH6fMAYAA",
+    "incidentId" : "D0SBDIHAYEE",
+    "inputs" : {
+      "_S1" : {
+        "key" : {
+          "dsname" : "value",
+          "host" : "ubuntu",
+          "plugin" : "signalfx-metadata",
+          "plugin_instance" : "utilization",
+          "sf_metric" : "cpu.utilization"
+        },
+        "value" : "0.2002002002002"
+      },
+      "_S2" : {
+        "value" : "0.1"
+      }
+    },
+    "severity" : "Critical",
+    "timestamp" : 1551199290000
+  } ],
+  "incidentId" : "D0SBDIHAYEE",
+  "severity" : "Critical"
+}, {
+  "active" : false,
+  "anomalyState" : "STOPPED",
+  "detectLabel" : "sample",
+  "detectorId" : "DzyF3vbAcCw",
+  "duration" : 142028,
+  "events" : [ {
+    "anomalyState" : "STOPPED",
+    "detectLabel" : "sample",
+    "detectorId" : "DzyF3vbAcCw",
+    "detectorName" : "SAMPLE: sample",
+    "event_annotations" : { },
+    "id" : "D0W1sY8AYAE",
+    "incidentId" : "D0Uc22KAYAE",
+    "inputs" : {
+      "_S1" : {
+        "key" : {
+          "dsname" : "value",
+          "host" : "ubuntu",
+          "plugin" : "signalfx-metadata",
+          "plugin_instance" : "utilization",
+          "sf_metric" : "cpu.utilization"
+        },
+        "value" : "0.3003003003003"
+      }
+    },
+    "severity" : "Critical",
+    "timestamp" : 1551211182028
+  }, {
+    "anomalyState" : "ANOMALOUS",
+    "detectLabel" : "sample",
+    "detectorId" : "DzyF3vbAcCw",
+    "detectorName" : "SAMPLE: sample",
+    "event_annotations" : { },
+    "id" : "D0W1KBRAcAA",
+    "incidentId" : "D0Uc22KAYAE",
+    "inputs" : {
+      "_S1" : {
+        "key" : {
+          "dsname" : "value",
+          "host" : "ubuntu",
+          "plugin" : "signalfx-metadata",
+          "plugin_instance" : "utilization",
+          "sf_metric" : "cpu.utilization"
+        },
+        "value" : "0.3003003003003"
+      }
+    },
+    "severity" : "Critical",
+    "timestamp" : 1551211040000
+  } ],
+  "incidentId" : "D0Uc22KAYAE",
+  "severity" : "Critical"
+}, {
+  "active" : true,
+  "anomalyState" : "ANOMALOUS",
+  "detectLabel" : "Farts",
+  "detectorId" : "Dzx2UBeAYAA",
+  "events" : [ {
+    "anomalyState" : "ANOMALOUS",
+    "detectLabel" : "Farts",
+    "detectorId" : "Dzx2UBeAYAA",
+    "detectorName" : "Farts",
+    "event_annotations" : {
+      "sfui_incidentInformation" : "[{\"selectedIdentifiers\":[\"limit_above_27\",\"A\"],\"conditionIdentifier\":\"A_above_limit_above_27_immediately\",\"readableCondition\":\"The value of cpu.utilization is above 0.1.\"}]"
+    },
+    "id" : "D0V8nKAAcAA",
+    "incidentId" : "D0R7xkFAYG0",
+    "inputs" : {
+      "_S1" : {
+        "key" : {
+          "dsname" : "value",
+          "host" : "ubuntu",
+          "plugin" : "signalfx-metadata",
+          "plugin_instance" : "utilization",
+          "sf_metric" : "cpu.utilization"
+        },
+        "value" : "0.3996003996004"
+      },
+      "_S2" : {
+        "value" : "0.1"
+      }
+    },
+    "severity" : "Critical",
+    "timestamp" : 1551196270000
+  } ],
+  "incidentId" : "D0R7xkFAYG0",
+  "severity" : "Critical"
+} ]
