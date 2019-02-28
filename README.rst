@@ -366,4 +366,4 @@ a ``ValueError`` exception.
 License
 -------
 
-Apache Software License v2. Copyright © 2014-2017 SignalFx
+Apache Software License v2. Copyright © 2014-2019 SignalFx
