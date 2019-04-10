@@ -16,8 +16,9 @@ class SignalFlowClient(object):
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
                  timeout=constants.DEFAULT_TIMEOUT,
                  transport=ws.WebSocketTransport,
-                 compress=True):
-        self._transport = transport(token, endpoint, timeout, compress)
+                 compress=True, proxy_url=None):
+        self._transport = transport(token, endpoint, timeout, compress,
+                                    proxy_url)
         self._computations = set([])
 
     def __enter__(self):

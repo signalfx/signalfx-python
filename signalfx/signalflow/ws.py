@@ -29,7 +29,11 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
     _SIGNALFLOW_WEBSOCKET_ENDPOINT = 'v2/signalflow/connect'
 
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
-                 timeout=constants.DEFAULT_TIMEOUT, compress=True):
+                 timeout=constants.DEFAULT_TIMEOUT, compress=True,
+                 proxy_url=None):
+        if proxy_url:
+            raise NotImplementedError('Websocket transport cannot be proxied!')
+
         ws_endpoint = '{0}/{1}'.format(
             endpoint.replace('http', 'ws', 1),
             WebSocketTransport._SIGNALFLOW_WEBSOCKET_ENDPOINT)
