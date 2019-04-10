@@ -26,8 +26,8 @@ setup(
     long_description=long_description,
     zip_safe=True,
     packages=find_packages(),
-    test_requires=test_requirements,
     install_requires=requirements,
+    tests_require=test_requirements,
     classifiers=[
         'Operating System :: OS Independent',
         'Programming Language :: Python',
