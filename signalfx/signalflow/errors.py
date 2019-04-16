@@ -5,9 +5,10 @@ class SignalFlowException(Exception):
     """A generic error encountered when interacting with the SignalFx
     SignalFlow API."""
 
-    def __init__(self, code, message=None):
+    def __init__(self, code, message=None, error_type=None):
         self._code = code
         self._message = message
+        self._error_type = error_type
 
     @property
     def code(self):
@@ -19,10 +20,19 @@ class SignalFlowException(Exception):
         """Returns an optional error message attached to this error."""
         return self._message
 
+    @property
+    def error_type(self):
+        """Returns an optional error type attached to this error."""
+        return self._error_type
+
     def __str__(self):
+        err = self._code
+        if self._error_type:
+            err = '{0} ({1})'.format(self._code, self._error_type)
+
         if self._message:
-            return '{0}: {1}'.format(self._code, self._message)
-        return 'Error {0}'.format(self._code)
+            return '{0}: {1}'.format(err, self._message)
+        return 'Error {0}'.format(err)
 
 
 class ComputationAborted(Exception):

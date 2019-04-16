@@ -64,7 +64,8 @@ class SSETransport(transport._SignalFlowTransport):
         if r.status != 200:
             try:
                 if r.headers['Content-Type'] == 'application/json':
-                    raise errors.SignalFlowException(**json.loads(r.read()))
+                    rbody = json.loads(r.read())
+                    raise errors.SignalFlowException(r.status, rbody.get('message'), rbody.get('errorType'))
                 raise errors.SignalFlowException(r.status)
             finally:
                 r.close()
