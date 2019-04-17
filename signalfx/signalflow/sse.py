@@ -24,7 +24,8 @@ class SSETransport(transport._SignalFlowTransport):
     _SIGNALFLOW_ENDPOINT = 'v2/signalflow'
 
     def __init__(self, token, endpoint=constants.DEFAULT_STREAM_ENDPOINT,
-                 timeout=constants.DEFAULT_TIMEOUT, compress=True):
+                 timeout=constants.DEFAULT_TIMEOUT, compress=True,
+                 proxy_url=None):
         super(SSETransport, self).__init__(token, endpoint, timeout)
         pool_args = {
             'url': self._endpoint,
@@ -43,7 +44,12 @@ class SSETransport(transport._SignalFlowTransport):
                 'ca_certs': certifi.where()    # Path to the Certifi bundle.
             })
 
-        self._http = urllib3.connectionpool.connection_from_url(**pool_args)
+        if proxy_url:
+            proxy_manager = urllib3.poolmanager.proxy_from_url(proxy_url)
+            endpoint = pool_args.pop('url')
+            self._http = proxy_manager.connection_from_url(endpoint, pool_kwargs=pool_args)
+        else:
+            self._http = urllib3.connectionpool.connection_from_url(**pool_args)
 
     def __str__(self):
         return 'sse+{0}'.format(self._endpoint)
@@ -58,7 +64,8 @@ class SSETransport(transport._SignalFlowTransport):
         if r.status != 200:
             try:
                 if r.headers['Content-Type'] == 'application/json':
-                    raise errors.SignalFlowException(**json.loads(r.read()))
+                    rbody = json.loads(r.read())
+                    raise errors.SignalFlowException(r.status, rbody.get('message'), rbody.get('errorType'))
                 raise errors.SignalFlowException(r.status)
             finally:
                 r.close()
