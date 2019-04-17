@@ -16,6 +16,8 @@ _logger = logging.getLogger(__name__)
 class SignalFxRestClient(object):
     """SignalFx REST API client."""
 
+    _CHART_ENDPOINT_SUFFIX = 'v2/chart'
+    _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
@@ -344,6 +346,22 @@ class SignalFxRestClient(object):
                          **kwargs)
         resp.raise_for_status()
         return resp.json()
+
+    # functionality related to charts
+    def get_chart(self, id, **kwargs):
+        """"Retrieve a (v2) chart by id.
+        """
+        resp = self._get_object_by_name(self._CHART_ENDPOINT_SUFFIX, id,
+                                        **kwargs)
+        return resp
+
+    # functionality related to dashboards
+    def get_dashboard(self, id, **kwargs):
+        """"Retrieve a (v2) dashboard by id.
+        """
+        resp = self._get_object_by_name(self._DASHBOARD_ENDPOINT_SUFFIX, id,
+                                        **kwargs)
+        return resp
 
     # functionality related to detectors
     def get_detector(self, id, **kwargs):
