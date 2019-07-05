@@ -13,13 +13,13 @@ Installation
 
 To install with `pip`:
 
-.. code::
+.. code:: console
 
     $ pip install signalfx
 
 To install from source:
 
-.. code::
+.. code:: console
 
     $ git clone https://github.com/signalfx/signalfx-python.git
     $ cd signalfx-python/
@@ -55,10 +55,10 @@ you access to the API client that you want:
     # For the SignalFlow API
     flow = sfx.signalflow('ACCESS_TOKEN')
 
-If no endpoints are set manually, this library uses the ``us0`` realm by default. 
+If no endpoints are set manually, this library uses the ``us0`` realm by default.
 If you are not in this realm, you will need to explicitly set the
 endpoint urls above. To determine if you are in a different realm and need to
-explicitly set the endpoints, check your profile page in the SignalFx 
+explicitly set the endpoints, check your profile page in the SignalFx
 web application. You will also need to specify an access token when requesting
 one of those clients. For the ingest client, you need to specify your
 organization access token (which can be obtained from the
@@ -245,7 +245,7 @@ metric registry data directly to SignalFx.
     def callme():
         # whatever
         pass
-    
+
     @count_calls_with_dims(dimension_key="dimension_value")
     def callme_with_dims():
         # whatever
@@ -273,10 +273,10 @@ computations on the SignalFx platform. For more information, head over to our
 Developers documentation:
 
 * `SignalFlow Overview`_
-* `Getting started with the SignalFlow API`_
+* `SignalFlow API Reference`_
 
 .. _SignalFlow Overview: https://developers.signalfx.com/signalflow_analytics/signalflow_overview.html
-.. _SignalFlow API Reference: https://developers.signalfx.com/signalflow_reference.html 
+.. _SignalFlow API Reference: https://developers.signalfx.com/signalflow_reference.html
 
 The SignalFlow client accepts either an Organization Access Token or a User API Token.
 Executing a SignalFlow program is very simple with this client library:
@@ -352,7 +352,7 @@ when your program exits:
 SSLError when working with tags, metrics, dimensions, metrictimeseries, organization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code::
+.. code:: console
 
     ERROR:root:Posting to SignalFx failed.
     SSLError: hostname 'api.signalfx.com' doesn't match either of '*.signalfuse.com', 'signalfuse.com'.
