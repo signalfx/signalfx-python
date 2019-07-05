@@ -2,7 +2,8 @@
 
 This file documents important changes to the SignalFx Python client library.
 
-- [[1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper](#1019---2018-05-03-dimension-support-in-pyformance-wrapper)
+- [[1.1.0] - 2019-02-28: Expanded Detector and Incident methods](#110---2019-02-28-expanded-detector-and-incident-methods)
+- [[1.0.19] - 2018-05-03: dimension support in pyformance wrapper](#1019---2018-05-03-dimension-support-in-pyformance-wrapper)
 - [[1.0.18] - 2018-03-15: Compression of datapoint payloads](#1018---2018-03-15-compression-of-datapoint-payloads)
 - [[1.0.17] - 2018-03-02: Support for immediate SignalFlow results](#1017---2018-03-02-support-for-immediate-signalflow-results)
 - [[1.0.16] - 2017-03-24: SignalFlow streaming performance](#1016---2017-03-24-signalflow-streaming-performance)
@@ -17,6 +18,16 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.0] - 2019-02-28: Expanded Detector and Incident methods
+
+Added methods for accessing the API functionality of retrieving
+Incidents, retrieving a Detector by its ID, retrieving Incidents for a
+Detector by its ID, and clearing an Incident by its ID.
+
+Also added preliminary support for `disable_all_metric_publishes`
+flag when executing SignalFlow computations and removed an unsupported
+`Property` datapoint attribute.
 
 #### [1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper
 
