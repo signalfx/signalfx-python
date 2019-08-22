@@ -22,6 +22,12 @@ responses_map = {
         'status_code': 200,
         'method': 'GET',
     },
+    'GET_DETECTOR_EVENTS': {
+        'path': '/v2/detector/abc123/events',
+        'content': '[]',
+        'status_code': 200,
+        'method': 'GET',
+    },
     'GET_INCIDENTS': {
         'path': '/v2/incident',
         'content': open('tests/fixtures/get_incidents.json').read(),
@@ -93,6 +99,13 @@ class RESTTest(unittest.TestCase):
             with signalfx.SignalFx().rest('authkey') as sfx:
                 incidents = sfx.get_detector_incidents('abc123')
                 self.assertEqual(0, len(incidents))
+
+    def test_get_detector_events(self):
+        name = 'GET_DETECTOR_EVENTS'
+        with HTTMock(mock_maker(name)):
+            with signalfx.SignalFx().rest('authkey') as sfx:
+                events = sfx.get_detector_events('abc123')
+                self.assertEqual(0, len(events))
 
     def test_get_incidents(self):
         name = 'GET_INCIDENTS'
