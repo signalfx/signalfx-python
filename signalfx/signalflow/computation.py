@@ -30,6 +30,15 @@ class Computation(object):
         self._current_batch_message = None
         self._current_batch_count = 0
 
+        self._find_matched_no_timeseries = False
+
+        self._find_limited_resultset = False
+        self._find_matched_size = 0
+        self._find_limit_size = 0
+
+        self._group_by_missing_property = False
+        self._group_by_missing_properties = []
+
         # Kick it off.
         self._stream = self._execute()
 
@@ -55,6 +64,30 @@ class Computation(object):
     @property
     def last_logical_ts(self):
         return self._last_logical_ts
+
+    @property
+    def find_matched_no_timeseries(self):
+        return self._find_matched_no_timeseries
+
+    @property
+    def find_limited_resultset(self):
+        return self._find_limited_resultset
+
+    @property
+    def find_matched_size(self):
+        return self._find_matched_size
+
+    @property
+    def find_limit_size(self):
+        return self._find_limit_size
+
+    @property
+    def group_by_missing_property(self):
+        return self._group_by_missing_property
+
+    @property
+    def group_by_missing_properties(self):
+        return self._group_by_missing_properties
 
     def close(self):
         """Manually close this computation and detach from its stream.
@@ -176,6 +209,15 @@ class Computation(object):
             self._resolution = message['contents']['resolutionMs']
         elif message['messageCode'] == 'FETCH_NUM_TIMESERIES':
             self._num_input_timeseries += int(message['numInputTimeSeries'])
+        elif message['messageCode'] == 'FIND_MATCHED_NO_TIMESERIES':
+            self._find_matched_no_timeseries = True
+        elif message['messageCode'] == 'FIND_LIMITED_RESULT_SET':
+            self._find_limited_resultset = True
+            self._find_matched_size = message['matchedSize']
+            self._find_limit_size = message['limitSize']
+        elif message['messageCode'] == 'GROUPBY_MISSING_PROPERTY':
+            self._group_by_missing_property = True
+            self._group_by_missing_properties = message['propertyNames']
 
     def _get_batch_to_yield(self):
         to_yield = self._current_batch_message
