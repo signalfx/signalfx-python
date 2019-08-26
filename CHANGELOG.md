@@ -2,6 +2,7 @@
 
 This file documents important changes to the SignalFx Python client library.
 
+- [[1.1.1] - 2019-08-22: Expanded Detector methods and Computation messages](#110---2019-08-22-added-detector-event-method-and-computation-messages)
 - [[1.1.0] - 2019-02-28: Expanded Detector and Incident methods](#110---2019-02-28-expanded-detector-and-incident-methods)
 - [[1.0.19] - 2018-05-03: dimension support in pyformance wrapper](#1019---2018-05-03-dimension-support-in-pyformance-wrapper)
 - [[1.0.18] - 2018-03-15: Compression of datapoint payloads](#1018---2018-03-15-compression-of-datapoint-payloads)
@@ -18,6 +19,11 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.1] - 2019-08-22: Added Detector Event method and Computation messages
+
+Added `get_detector_events` method for getting events for a detector.
+Added new properties for computation populated by job info messages
 
 #### [1.1.0] - 2019-02-28: Expanded Detector and Incident methods
 

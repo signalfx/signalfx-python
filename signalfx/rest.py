@@ -454,8 +454,19 @@ class SignalFxRestClient(object):
         # successful delete returns 204, which has no response json
         return resp
 
+    def get_detector_events(self, id, **kwargs):
+        """Gets all events for a detector
+        """
+        resp = self._get(
+            self._u(self._DETECTOR_ENDPOINT_SUFFIX, id, 'events'),
+            None,
+            **kwargs
+        )
+        resp.raise_for_status()
+        return resp.json()
+
     def get_detector_incidents(self, id, **kwargs):
-        """Gets all incidents for a detector
+        """Gets active incidents for a detector
         """
         resp = self._get(
             self._u(self._DETECTOR_ENDPOINT_SUFFIX, id, 'incidents'),
