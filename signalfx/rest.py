@@ -18,7 +18,7 @@ class SignalFxRestClient(object):
 
     _CHART_ENDPOINT_SUFFIX = 'v2/chart'
     _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
-    _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
+    _DASHBOARD_GROUP_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
