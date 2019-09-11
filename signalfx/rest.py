@@ -18,6 +18,7 @@ class SignalFxRestClient(object):
 
     _CHART_ENDPOINT_SUFFIX = 'v2/chart'
     _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
+    _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
@@ -360,6 +361,14 @@ class SignalFxRestClient(object):
         """"Retrieve a (v2) dashboard by id.
         """
         resp = self._get_object_by_name(self._DASHBOARD_ENDPOINT_SUFFIX, id,
+                                        **kwargs)
+        return resp
+
+    # functionality related to dashboard groups
+    def get_dashboard_group(self, id, **kwargs):
+        """"Retrieve a (v2) dashboard group by id.
+        """
+        resp = self._get_object_by_name(self._DASHBOARD_GROUP_ENDPOINT_SUFFIX, id,
                                         **kwargs)
         return resp
 
