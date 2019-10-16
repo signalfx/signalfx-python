@@ -213,8 +213,8 @@ class Computation(object):
             self._find_matched_no_timeseries = True
         elif message['messageCode'] == 'FIND_LIMITED_RESULT_SET':
             self._find_limited_resultset = True
-            self._find_matched_size = message['matchedSize']
-            self._find_limit_size = message['limitSize']
+            self._find_matched_size = message['contents']['matchedSize']
+            self._find_limit_size = message['contents']['limitSize']
         elif message['messageCode'] == 'GROUPBY_MISSING_PROPERTY':
             self._group_by_missing_property = True
             self._group_by_missing_properties = message['propertyNames']
