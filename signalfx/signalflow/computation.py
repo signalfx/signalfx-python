@@ -217,7 +217,9 @@ class Computation(object):
             self._find_limit_size = message['limitSize']
         elif message['messageCode'] == 'GROUPBY_MISSING_PROPERTY':
             self._group_by_missing_property = True
-            self._group_by_missing_properties = message['propertyNames']
+            self._group_by_missing_properties = message['contents'][
+                'propertyNames'
+            ]
 
     def _get_batch_to_yield(self):
         to_yield = self._current_batch_message
