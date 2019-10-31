@@ -205,21 +205,20 @@ class Computation(object):
         """Process an information message received from the computation."""
         # Extract the output resolution from the appropriate message, if
         # it's present.
+        contents = message.get('contents', None)
         if message['messageCode'] == 'JOB_RUNNING_RESOLUTION':
-            self._resolution = message['contents']['resolutionMs']
+            self._resolution = contents['resolutionMs']
         elif message['messageCode'] == 'FETCH_NUM_TIMESERIES':
             self._num_input_timeseries += int(message['numInputTimeSeries'])
         elif message['messageCode'] == 'FIND_MATCHED_NO_TIMESERIES':
             self._find_matched_no_timeseries = True
         elif message['messageCode'] == 'FIND_LIMITED_RESULT_SET':
             self._find_limited_resultset = True
-            self._find_matched_size = message['matchedSize']
-            self._find_limit_size = message['limitSize']
+            self._find_matched_size = contents['matchedSize']
+            self._find_limit_size = contents['limitSize']
         elif message['messageCode'] == 'GROUPBY_MISSING_PROPERTY':
             self._group_by_missing_property = True
-            self._group_by_missing_properties = message['contents'][
-                'propertyNames'
-            ]
+            self._group_by_missing_properties = contents['propertyNames']
 
     def _get_batch_to_yield(self):
         to_yield = self._current_batch_message
