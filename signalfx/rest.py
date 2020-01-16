@@ -18,6 +18,7 @@ class SignalFxRestClient(object):
 
     _CHART_ENDPOINT_SUFFIX = 'v2/chart'
     _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
+    _DASHBOARD_GROUP_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
@@ -355,6 +356,40 @@ class SignalFxRestClient(object):
                                         **kwargs)
         return resp
 
+    # functionality related to dashboard groups
+    def get_dashboard_group(self, id, **kwargs):
+        """"Retrieve a (v2) dashboard group by id.
+        """
+        resp = self._get_object_by_name(self._DASHBOARD_GROUP_ENDPOINT_SUFFIX,
+                                        id, **kwargs)
+        return resp
+
+    def get_dashboard_groups(self, name=None, batch_size=100, **kwargs):
+        """Retrieve all (v2) dashboard groupss matching the given name; all (v2)
+        dashboard groups otherwise.
+
+        Note that this method will loop through the paging of the results and
+        accumulate all dashboard groups that match the query.
+        """
+        dashgroups = []
+        offset = 0
+        while True:
+            resp = self._get(
+                self._u(self._DASHBOARD_GROUP_ENDPOINT_SUFFIX),
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name,
+                },
+                **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            dashgroups += data['results']
+            if len(dashgroups) == data['count']:
+                break
+            offset = len(dashgroups)
+        return dashgroups
+
     # functionality related to dashboards
     def get_dashboard(self, id, **kwargs):
         """"Retrieve a (v2) dashboard by id.
@@ -362,6 +397,32 @@ class SignalFxRestClient(object):
         resp = self._get_object_by_name(self._DASHBOARD_ENDPOINT_SUFFIX, id,
                                         **kwargs)
         return resp
+
+    def get_dashboards(self, name=None, batch_size=100, **kwargs):
+        """Retrieve all (v2) dashboards matching the given name; all (v2)
+        dashboards otherwise.
+
+        Note that this method will loop through the paging of the results and
+        accumulate all dashboards that match the query. This may be expensive.
+        """
+        dashboards = []
+        offset = 0
+        while True:
+            resp = self._get(
+                self._u(self._DASHBOARD_ENDPOINT_SUFFIX),
+                params={
+                    'offset': offset,
+                    'limit': batch_size,
+                    'name': name,
+                },
+                **kwargs)
+            resp.raise_for_status()
+            data = resp.json()
+            dashboards += data['results']
+            if len(dashboards) == data['count']:
+                break
+            offset = len(dashboards)
+        return dashboards
 
     # functionality related to detectors
     def get_detector(self, id, **kwargs):
