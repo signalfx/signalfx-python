@@ -242,7 +242,7 @@ class _BaseSignalFxIngestClient(object):
                                    self._endpoint,
                                    self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
                 except Exception as err:
-                    self._inc_error(err.__class__.__name)
+                    self._inc_error(err.__class__.__name__)
                     _logger.exception('Posting data to SignalFx failed.')
         except KeyboardInterrupt:
             self.stop(msg='Thread stopped by keyboard interrupt.')
