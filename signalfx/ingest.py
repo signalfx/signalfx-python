@@ -59,6 +59,7 @@ class _BaseSignalFxIngestClient(object):
         self._queue = queue.Queue()
         self._thread_running = False
         self._lock = threading.Lock()
+        self._error_counters = collections.defaultdict(lambda: 0)
 
         user_agent = ['{0}/{1}'.format(version.name, version.version)]
         if type(user_agents) == list:
@@ -206,6 +207,23 @@ class _BaseSignalFxIngestClient(object):
         self._send_thread.join()
         _logger.debug(msg)
 
+    def _inc_error(self, error_type):
+        """Increment internal counter of errors encountered.
+
+        Args:
+            error_type (string): the exception class name or other error
+                descriptor.
+        """
+        with self._lock:
+            self._error_counters[error_type] += 1
+
+    def reset_error_counters(self):
+        """Reset dict of error counters to 0 and return the previous values."""
+        with self._lock:
+            previous = self._error_counters
+            self._error_counters = collections.defaultdict(lambda: 0)
+        return previous
+
     def _send(self):
         try:
             while self._thread_running or not self._queue.empty():
@@ -223,7 +241,8 @@ class _BaseSignalFxIngestClient(object):
                                '{0}/{1}'.format(
                                    self._endpoint,
                                    self._INGEST_ENDPOINT_DATAPOINT_SUFFIX))
-                except:
+                except Exception as err:
+                    self._inc_error(err.__class__.__name__)
                     _logger.exception('Posting data to SignalFx failed.')
         except KeyboardInterrupt:
             self.stop(msg='Thread stopped by keyboard interrupt.')
