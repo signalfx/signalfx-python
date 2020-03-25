@@ -1,7 +1,8 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
-
+- [[1.1.4] - 2020-03-25: Add ingest error counters](#114---2020-03-25-add-ingest-error-counters)
+- [[1.1.3] - 2020-01-16: Add new dashboard methods](#113---2020-01-16-add-new-dashboard-methods)
 - [[1.1.2] - 2019-11-14: Fix accessing some computation response fields](#112---2019-11-14-fix-accessing-some-computation-response-fields)
 - [[1.1.1] - 2019-08-22: Expanded Detector methods and Computation messages](#111---2019-08-22-added-detector-event-method-and-computation-messages)
 - [[1.1.0] - 2019-02-28: Expanded Detector and Incident methods](#110---2019-02-28-expanded-detector-and-incident-methods)
@@ -20,6 +21,14 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.4] - 2020-03-25: Add ingest error counters
+
+Adds counters for errors during ingest and `reset_error_counters` to reset and return those counters.
+
+#### [1.1.3] - 2020-01-16: Add new dashboard methods
+
+Added `get_dashboards`, `get_dashboard_group`, and `get_dashboard_groups`.
 
 #### [1.1.2] - 2019-11-14: Fix accessing some computation response fields
 
