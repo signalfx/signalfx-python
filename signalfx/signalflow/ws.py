@@ -190,7 +190,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
                 return None
 
         if is_json:
-            return self._process_message(json.loads(data.decode('utf-8')))
+            return json.loads(data.decode('utf-8'))
 
         if mtype == 5:
             # Decode data batch message
