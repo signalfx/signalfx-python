@@ -1,4 +1,5 @@
-# Copyright (C) 2016 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 import logging
 import pprint
@@ -515,22 +516,28 @@ class SignalFxRestClient(object):
         # successful delete returns 204, which has no response json
         return resp
 
-    def get_detector_events(self, id, **kwargs):
-        """Gets all events for a detector
+    def get_detector_events(self, detector_id, **kwargs):
+        """Gets all events for a detector.
+
+        Args:
+            detector_id (string): the ID of the detector.
         """
         resp = self._get(
-            self._u(self._DETECTOR_ENDPOINT_SUFFIX, id, 'events'),
+            self._u(self._DETECTOR_ENDPOINT_SUFFIX, detector_id, 'events'),
             None,
             **kwargs
         )
         resp.raise_for_status()
         return resp.json()
 
-    def get_detector_incidents(self, id, **kwargs):
-        """Gets active incidents for a detector
+    def get_detector_incidents(self, detector_id, **kwargs):
+        """Gets active incidents for a detector.
+
+        Args:
+            detector_id (string): the ID of the detector.
         """
         resp = self._get(
-            self._u(self._DETECTOR_ENDPOINT_SUFFIX, id, 'incidents'),
+            self._u(self._DETECTOR_ENDPOINT_SUFFIX, detector_id, 'incidents'),
             None,
             **kwargs
         )
@@ -538,14 +545,19 @@ class SignalFxRestClient(object):
         return resp.json()
 
     # functionality related to incidents
-    def get_incident(self, id, **kwargs):
+    def get_incident(self, incident_id, **kwargs):
         """"Retrieve a (v2) incident by id.
+
+        Args:
+            incident_id (string): the ID of the incident.
         """
-        resp = self._get_object_by_name(self._INCIDENT_ENDPOINT_SUFFIX, id,
+        resp = self._get_object_by_name(self._INCIDENT_ENDPOINT_SUFFIX,
+                                        incident_id,
                                         **kwargs)
         return resp
 
-    def get_incidents(self, offset=0, limit=None, include_resolved=False, **kwargs):
+    def get_incidents(self, offset=0, limit=None, include_resolved=False,
+                      **kwargs):
         """Retrieve all (v2) incidents.
         """
         resp = self._get(
@@ -560,11 +572,14 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         return resp.json()
 
-    def clear_incident(self, id, **kwargs):
-        """Clear an incident.
+    def clear_incident(self, incident_id, **kwargs):
+        """Clears an incident.
+
+        Args:
+            incident_id (string): the ID of the incident.
         """
         resp = self._put(
-            self._u(self._INCIDENT_ENDPOINT_SUFFIX, id, 'clear'),
+            self._u(self._INCIDENT_ENDPOINT_SUFFIX, incident_id, 'clear'),
             None,
             **kwargs
         )

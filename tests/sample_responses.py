@@ -6,8 +6,8 @@ import json
 import requests
 
 # sample GET requests
-l = requests.models.Response()
-l._content = """{
+r1 = requests.models.Response()
+r1._content = """{
   "creator" : "BrppnRvAcAA",
   "lastUpdatedBy" : "BrppnRvAcAA",
   "created" : 1404424799704,
@@ -18,14 +18,14 @@ l._content = """{
   "description" : null,
   "type" : "GAUGE"
 }"""
-l.status_code = 200
+r1.status_code = 200
 
-m = requests.models.Response()
-m._content = 'Unable to find the given metric.'
-m.status_code = 404
+r2 = requests.models.Response()
+r2._content = 'Unable to find the given metric.'
+r2.status_code = 404
 
-n = requests.models.Response()
-n._content = """{
+r3 = requests.models.Response()
+r3._content = """{
   "results" : [ {
     "creator" : "BrppnSQAgAA",
     "lastUpdatedBy" : "BrppnSQAgAA",
@@ -75,9 +75,9 @@ n._content = """{
 }"""
 
 GETS = {
-    'https://api.signalfx.com/v2/metric/jvm.cpu.load': l,
-    'https://api.signalfx.com/v2/metric/jvm.cpu.loaderino': m,
-    'https://api.signalfx.com/v2/tag?query=is_it_there': n
+    'https://api.signalfx.com/v2/metric/jvm.cpu.load': r1,
+    'https://api.signalfx.com/v2/metric/jvm.cpu.loaderino': r2,
+    'https://api.signalfx.com/v2/tag?query=is_it_there': r3
 }
 
 # sample PUT requests

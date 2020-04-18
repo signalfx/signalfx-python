@@ -1,4 +1,5 @@
-# Copyright (C) 2018 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2018-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 import functools
 from .metadata import MetricMetadata
@@ -50,9 +51,7 @@ class MetricsRegistry(pyformance.registry.MetricsRegistry):
         return super(MetricsRegistry, self).timer(
             self.metadata.register(key, **dims))
 
-    def clear(self):    # noqa flake8 complains that this is
-                        # a redefinition of the imported clear,
-                        # but obviously it isn't
+    def clear(self): # noqa
         """Clears the registered metrics and metadata"""
         self.metadata.clear()
         super(MetricsRegistry, self).clear()

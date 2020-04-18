@@ -1,4 +1,5 @@
-# Copyright (C) 2015-2018 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2015-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 import collections
 import json

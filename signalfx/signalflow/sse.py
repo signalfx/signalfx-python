@@ -1,4 +1,5 @@
-# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 import certifi
 import json
@@ -47,9 +48,11 @@ class SSETransport(transport._SignalFlowTransport):
         if proxy_url:
             proxy_manager = urllib3.poolmanager.proxy_from_url(proxy_url)
             endpoint = pool_args.pop('url')
-            self._http = proxy_manager.connection_from_url(endpoint, pool_kwargs=pool_args)
+            self._http = proxy_manager.connection_from_url(
+                    endpoint, pool_kwargs=pool_args)
         else:
-            self._http = urllib3.connectionpool.connection_from_url(**pool_args)
+            self._http = urllib3.connectionpool.connection_from_url(
+                    **pool_args)
 
     def __str__(self):
         return 'sse+{0}'.format(self._endpoint)
@@ -65,7 +68,10 @@ class SSETransport(transport._SignalFlowTransport):
             try:
                 if r.headers['Content-Type'] == 'application/json':
                     rbody = json.loads(r.read())
-                    raise errors.SignalFlowException(r.status, rbody.get('message'), rbody.get('errorType'))
+                    raise errors.SignalFlowException(
+                            r.status,
+                            rbody.get('message'),
+                            rbody.get('errorType'))
                 raise errors.SignalFlowException(r.status)
             finally:
                 r.close()

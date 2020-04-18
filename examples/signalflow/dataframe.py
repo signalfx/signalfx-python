@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2017-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 #
 # An example of how to accumulate the output of a SignalFlow computation and
 # convert it into a Pandas DataFrame for analysis.
@@ -63,5 +64,5 @@ if __name__ == '__main__':
     options = parser.parse_args()
     client = signalfx.SignalFx(stream_endpoint=options.stream_endpoint)
     flow = client.signalflow(options.token)
-    print get_data_frame(flow, options.program, options.start,
-                         options.stop, options.resolution)
+    print(get_data_frame(flow, options.program, options.start,
+                         options.stop, options.resolution))

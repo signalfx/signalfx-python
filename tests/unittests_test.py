@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2017-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
-from httmock import all_requests, urlmatch, HTTMock
+from httmock import all_requests, HTTMock
 import json
 import unittest
 from six.moves.urllib import parse
@@ -52,8 +53,9 @@ responses_map = {
     }
 }
 
-# Generates a function that can be used with HTTMock to test the endpoint.
-# It will validate the params, URL and Method, whilst returning a spec response.
+
+# Generates a function that can be used with HTTMock to test the endpoint. It
+# will validate the params, URL and Method, whilst returning a spec response.
 def mock_maker(name):
     @all_requests
     def mock_responder(url, request):
@@ -61,7 +63,8 @@ def mock_maker(name):
         if spec is None:
             raise Exception("Unknown mock")
 
-        if spec.get('path') != url.path or request.method != spec.get('method'):
+        if spec.get('path') != url.path or \
+                request.method != spec.get('method'):
             return {
                 'content': 'Unknown URL' + url.path,
                 'status_code': 400,
@@ -82,6 +85,7 @@ def mock_maker(name):
             'status_code': spec.get('status_code'),
         }
     return mock_responder
+
 
 class RESTTest(unittest.TestCase):
 
@@ -121,7 +125,8 @@ class RESTTest(unittest.TestCase):
             with signalfx.SignalFx().rest('authkey') as sfx:
                 orig_incident = json.loads(responses_map[name]['content'])
                 incident = sfx.get_incident('abc123')
-                self.assertEqual(orig_incident['incidentId'], incident['incidentId'])
+                self.assertEqual(orig_incident['incidentId'],
+                                 incident['incidentId'])
 
     def test_clear_incident(self):
         name = 'CLEAR_INCIDENT'
@@ -129,6 +134,7 @@ class RESTTest(unittest.TestCase):
             with signalfx.SignalFx().rest('authkey') as sfx:
                 resp = sfx.clear_incident('abc123')
                 self.assertEqual(200, resp.status_code)
+
 
 class WebSocketTransportTest(unittest.TestCase):
 
@@ -179,6 +185,7 @@ class WebSocketTransportTest(unittest.TestCase):
                 'value': 42
             }]
         })
+
 
 if __name__ == '__main__':
     unittest.main()

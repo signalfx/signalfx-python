@@ -1,4 +1,5 @@
-# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 from . import computation, ws
 from .. import constants
@@ -34,12 +35,10 @@ class SignalFlowClient(object):
                 max_delay=None, persistent=False, immediate=False,
                 disable_all_metric_publishes=None):
         """Execute the given SignalFlow program and stream the output back."""
-        params = self._get_params(start=start, stop=stop,
-                                  resolution=resolution,
-                                  maxDelay=max_delay,
-                                  persistent=persistent,
-                                  immediate=immediate,
-                                  disableAllMetricPublishes=disable_all_metric_publishes)
+        params = self._get_params(
+                start=start, stop=stop, resolution=resolution,
+                maxDelay=max_delay, persistent=persistent, immediate=immediate,
+                disableAllMetricPublishes=disable_all_metric_publishes)
 
         def exec_fn(since=None):
             if since:

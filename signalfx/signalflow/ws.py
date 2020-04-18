@@ -1,4 +1,5 @@
-# Copyright (C) 2016-2017 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2016-2019 SignalFx, Inc. All rights reserved.
+# Copyright (C) 2020 Splunk, Inc. All rights reserved.
 
 import base64
 import json
