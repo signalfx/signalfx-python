@@ -124,7 +124,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         self._send(request)
 
     def stop(self, handle, params):
-        request = {'type': 'stop'}
+        request = {'type': 'stop', 'handle': handle}
         request.update(params)
         self._send(request)
 
