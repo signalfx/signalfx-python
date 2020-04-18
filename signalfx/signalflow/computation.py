@@ -94,6 +94,7 @@ class Computation(object):
 
         This computation object cannot be restarted, used or streamed for after
         this method is called."""
+        self._state = Computation.STATE_COMPLETED
         if self._stream:
             self._stream.close()
             self._stream = None
@@ -124,6 +125,7 @@ class Computation(object):
                     self._stream = self._execute()
                     iterator = iter(self._stream)
                     continue
+                break
 
             if isinstance(message, messages.StreamStartMessage):
                 self._state = Computation.STATE_STREAM_STARTED

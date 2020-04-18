@@ -117,6 +117,7 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
         }
 
         self._send(request)
+        channel.offer(WebSocketComputationChannel.END_SENTINEL)
         del self._channels[channel.name]
 
     def keepalive(self, handle):
