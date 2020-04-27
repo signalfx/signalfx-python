@@ -20,6 +20,7 @@ class SignalFxRestClient(object):
     _CHART_ENDPOINT_SUFFIX = 'v2/chart'
     _DASHBOARD_ENDPOINT_SUFFIX = 'v2/dashboard'
     _DASHBOARD_GROUP_ENDPOINT_SUFFIX = 'v2/dashboardgroup'
+    _DATALINK_ENDPOINT_SUFFIX = 'v2/crosslink'
     _METRIC_ENDPOINT_SUFFIX = 'v2/metric'
     _DIMENSION_ENDPOINT_SUFFIX = 'v2/dimension'
     _DETECTOR_ENDPOINT_SUFFIX = 'v2/detector'
@@ -585,3 +586,38 @@ class SignalFxRestClient(object):
         )
         resp.raise_for_status()
         return resp
+
+    # functionality related to datalinks
+    def search_datalinks(self, context=None, propertyName=None, propertyValue=None, orderBy=None, offset=0, limit=None,
+                      **kwargs):
+        """Retrieve all data links.
+        """
+        resp = self._get(
+            self._u(self._DATALINK_ENDPOINT_SUFFIX),
+            params={
+                'context': context,
+                'propertyName': propertyName,
+                'propertyValue': propertyValue,
+                'orderBy': orderBy,
+                'offset': offset,
+                'limit': limit,
+            },
+            **kwargs)
+
+        resp.raise_for_status()
+        return resp.json()
+
+    def get_datalink(self, key, value, **kwargs):
+        """
+        get a dimension by key and value
+
+        Args:
+            key (string): key of the dimension
+            value (string): value of the dimension
+
+        Returns:
+            dictionary of response
+        """
+        return self._get_object_by_name(self._DATALINK_ENDPOINT_SUFFIX,
+                                        '{0}/{1}'.format(key, value),
+                                        **kwargs)
