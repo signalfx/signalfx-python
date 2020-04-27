@@ -25,7 +25,7 @@ This file documents important changes to the SignalFx Python client library.
 
 #### [1.1.5] - 2020-04-27: Add datalink methods
 
-Adds `search_datalinks` and `get_datalink`.
+Adds `get_datalinks` and `get_datalink`.
 
 #### [1.1.4] - 2020-03-25: Add ingest error counters
 
