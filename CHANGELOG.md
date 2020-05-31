@@ -1,7 +1,8 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
-- [[1.1.5] - 2020-04-27: Add datalink methods](#114---2020-04-27-add-datalink-methods)
+- [[1.1.6] - 2020-05-30: Fix JSON ingest client](#116---2020-05-30-fix-json-ingest-client)
+- [[1.1.5] - 2020-04-27: Add datalink methods](#115---2020-04-27-add-datalink-methods)
 - [[1.1.4] - 2020-03-25: Add ingest error counters](#114---2020-03-25-add-ingest-error-counters)
 - [[1.1.3] - 2020-01-16: Add new dashboard methods](#113---2020-01-16-add-new-dashboard-methods)
 - [[1.1.2] - 2019-11-14: Fix accessing some computation response fields](#112---2019-11-14-fix-accessing-some-computation-response-fields)
@@ -23,13 +24,21 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
 
+#### [1.1.6] - 2020-05-30: Fix JSON ingest client
+
+Fix the JSON ingest client when using a Python 3.x interpreter. The `zlib`
+module expects a `bytes` object passed to the `zlib.compress()` function, so we
+need to encode our JSON payloads as UTF-8 byte strings before passing them to
+the `_post()` function.
+
 #### [1.1.5] - 2020-04-27: Add datalink methods
 
 Adds `get_datalinks` and `get_datalink`.
 
 #### [1.1.4] - 2020-03-25: Add ingest error counters
 
-Adds counters for errors during ingest and `reset_error_counters` to reset and return those counters.
+Adds counters for errors during ingest and `reset_error_counters` to reset and
+return those counters.
 
 #### [1.1.3] - 2020-01-16: Add new dashboard methods
 
@@ -41,74 +50,70 @@ Fixed some bugs that tried to access a missing key
 
 #### [1.1.1] - 2019-08-22: Added Detector Event method and Computation messages
 
-Added `get_detector_events` method for getting events for a detector.
-Added new properties for computation populated by job info messages
+* Added `get_detector_events` method for getting events for a detector.
+* Added new properties for computation populated by job info messages
 
 #### [1.1.0] - 2019-02-28: Expanded Detector and Incident methods
 
-Added methods for accessing the API functionality of retrieving
-Incidents, retrieving a Detector by its ID, retrieving Incidents for a
-Detector by its ID, and clearing an Incident by its ID.
+Added methods for accessing the API functionality of retrieving incidents,
+retrieving a detector by its ID, retrieving incidents for a detector by its ID,
+and clearing an incident by its ID.
 
-Also added preliminary support for `disable_all_metric_publishes`
-flag when executing SignalFlow computations and removed an unsupported
-`Property` datapoint attribute.
+Also added preliminary support for `disable_all_metric_publishes` flag when
+executing SignalFlow computations and removed an unsupported `Property`
+datapoint attribute.
 
 #### [1.0.19] - 2018-05-03: Dimension support in Pyformance wrapper
 
-This release enhances the SignalFx pyformance package and extends
-the Pyformance registry to support dimensional metadata. Please
-refer to the README and examples for more information on changes to
-the pyformance package.
+This release enhances the SignalFx pyformance package and extends the Pyformance
+registry to support dimensional metadata. Please refer to the README and
+examples for more information on changes to the pyformance package.
 
 #### [1.0.18] - 2018-03-15: Compression of datapoint payloads
 
-The main change in 1.0.18 is that payloads of datapoints sent to
-SignalFx will now be compressed by default (using GZip compression and
-`Content-Encoding: gzip`). This can be disabled by specifying
-`compress=False` on the SignalFx client, or on the ingest sub-client
-directly.
+The main change in 1.0.18 is that payloads of datapoints sent to SignalFx will
+now be compressed by default (using GZip compression and `Content-Encoding:
+gzip`). This can be disabled by specifying `compress=False` on the SignalFx
+client, or on the ingest sub-client directly.
 
 #### [1.0.17] - 2018-03-02: Support for immediate SignalFlow results
 
 Added support for the new `immediate` flag when executing SignalFlow
 computation. Setting this flag to `true` forces the system to shift the
-timerange of the computation by the `maxDelay` amount (either detected,
-or specified), to ensure that the computation returns and completes
-without additional delay to wait for late data.
+timerange of the computation by the `maxDelay` amount (either detected, or
+specified), to ensure that the computation returns and completes without
+additional delay to wait for late data.
 
-Also added support in the library to access event metadata on events
-received from a SignalFlow computation.
+Also added support in the library to access event metadata on events received
+from a SignalFlow computation.
 
 Updated the default TCP timeout to 5 seconds to match our Java and Ruby
 libraries.
 
 #### [1.0.16] - 2017-03-24: SignalFlow streaming performance
 
-Added support for compressed SignalFlow WebSocket messages, which
-improves the streaming performance by reducing the bandwidth
-requirements of the client.
+Added support for compressed SignalFlow WebSocket messages, which improves the
+streaming performance by reducing the bandwidth requirements of the client.
 
 #### [1.0.15] - 2017-02-20: Preflight API
 
-Added support for the detector preflighting API, allowing for the
-execution of a detector program in a mode that simply summarizes the
-events that would otherwise be generated, allowing for the quicker
-execution of that preflighting over longer spans of historical data.
+Added support for the detector preflighting API, allowing for the execution of a
+detector program in a mode that simply summarizes the events that would
+otherwise be generated, allowing for the quicker execution of that preflighting
+over longer spans of historical data.
 
-This release also includes a bugfix to how the total number of input
-timeseries is calculated, as well as support for a new version of the
-binary data message encoding (not yet used).
+This release also includes a bugfix to how the total number of input timeseries
+is calculated, as well as support for a new version of the binary data message
+encoding (not yet used).
 
 #### [1.0.14] - 2016-12-07: SignalFlow client bug fixes and context managers
 
-Fixes a bug in the SignalFlow streaming computation client library that
-would lead to an incomplete first data batch returned from the
-computation stream when the program being executed as multiple published
-streams.
+Fixes a bug in the SignalFlow streaming computation client library that would
+lead to an incomplete first data batch returned from the computation stream when
+the program being executed as multiple published streams.
 
-All three sub-clients also now support Python context managers so they
-can be used in `with` blocks:
+All three sub-clients also now support Python context managers so they can be
+used in `with` blocks:
 
 ```python
 with signalfx.SignalFx().signalflow('MY_TOKEN') as flow:
@@ -120,12 +125,12 @@ with signalfx.SignalFx().signalflow('MY_TOKEN') as flow:
 #### [1.0.13] - 2016-12-05: More features from detector APIs
 
 Added support for the `/v2/detector/validate` endpoint via
-`rest.validate_detector()`, and support for searching detectors by tags
-when using `rest.get_detectors()`.
+`rest.validate_detector()`, and support for searching detectors by tags when
+using `rest.get_detectors()`.
 
 It is also now possible to pass `ignore_not_found=True` to REST delete
-operations to ignore failures on attempting to remove a non-existent
-resource for which the DELETE call would otherwise return a 404.
+operations to ignore failures on attempting to remove a non-existent resource
+for which the DELETE call would otherwise return a 404.
 
 #### [1.0.12] - 2016-11-28: Detector APIs
 
