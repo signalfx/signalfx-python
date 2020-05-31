@@ -400,7 +400,8 @@ class JsonSignalFxIngestClient(_BaseSignalFxIngestClient):
         for item in datapoints_list:
             item_keys = list(item.keys())
             datapoints[item_keys[0]].append(item[item_keys[0]])
-        return json.dumps(datapoints)
+        return json.dumps(datapoints).encode('utf-8')
 
     def _send_event(self, event_data=None, url=None, session=None):
-        return self._post(json.dumps([event_data]), url, session)
+        data = json.dumps([event_data]).encode('utf-8')
+        return self._post(data, url, session)
