@@ -222,7 +222,7 @@ unique ID of the current host as an extra dimension. For example,
               {
                 'metric': 'myfunc.time',
                 'value': 532,
-                'timestamp': 1442960607000
+                'timestamp': 1442960607000,
                 'dimensions': {'host': 'server1', 'host_ip': '1.2.3.4'}
               },
             ])
