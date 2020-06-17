@@ -607,17 +607,16 @@ class SignalFxRestClient(object):
         resp.raise_for_status()
         return resp.json()
 
-    def get_datalink(self, key, value, **kwargs):
+    def get_datalink(self, id, **kwargs):
         """
-        get a dimension by key and value
+        get a dimension by id
 
         Args:
-            key (string): key of the dimension
-            value (string): value of the dimension
+            id (string): the id of the datalink
 
         Returns:
             dictionary of response
         """
         return self._get_object_by_name(self._DATALINK_ENDPOINT_SUFFIX,
-                                        '{0}/{1}'.format(key, value),
+                                        '{0}'.format(id),
                                         **kwargs)
