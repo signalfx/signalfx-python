@@ -1,6 +1,7 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
+- [[1.1.7] - 2020-06-17: Fix get data link](#117---2020-06-17-fix-get-data-link)
 - [[1.1.6] - 2020-05-30: Fix JSON ingest client](#116---2020-05-30-fix-json-ingest-client)
 - [[1.1.5] - 2020-04-27: Add datalink methods](#115---2020-04-27-add-datalink-methods)
 - [[1.1.4] - 2020-03-25: Add ingest error counters](#114---2020-03-25-add-ingest-error-counters)
@@ -23,6 +24,10 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.7] - 2020-06-17: Fix Get Data Link
+
+The `get_datalink` function was just completely wrong and errored. Oops!
 
 #### [1.1.6] - 2020-05-30: Fix JSON ingest client
 
