@@ -145,8 +145,8 @@ class RESTTest(unittest.TestCase):
         name = 'GET_DATALINK'
         with HTTMock(mock_maker(name)):
             with signalfx.SignalFx().rest('authkey') as sfx:
-                resp = sfx.get_datalink('abc123')
-                self.assertEqual(200, resp.status_code)
+                dl = sfx.get_datalink('abc123')
+                self.assertEqual(dl['id'], 'abc123')
 
 class WebSocketTransportTest(unittest.TestCase):
 
