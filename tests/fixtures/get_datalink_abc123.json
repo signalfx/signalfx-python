@@ -1,0 +1,39 @@
+{
+    "contextId": "EFt8R64AcAA",
+    "created": 1588005561261,
+    "creator": "DzYcn1NAcAA",
+    "id": "abc123",
+    "lastUpdated": 1591334706521,
+    "lastUpdatedBy": "DzYcn1NAcAA",
+    "propertyName": "host",
+    "targets": [
+        {
+            "dashboardGroupId": "ESsjH64AcDM",
+            "dashboardId": "ESskj7aAYAA",
+            "isDefault": false,
+            "name": "asdasd",
+            "type": "INTERNAL_LINK"
+        },
+        {
+            "dashboardGroupId": "EPpJWL_AcAA",
+            "dashboardId": "EP4Kz5tAYAA",
+            "isDefault": false,
+            "name": "ZxZX",
+            "type": "INTERNAL_LINK"
+        },
+        {
+            "dashboardGroupId": "EPpJWL_AcAA",
+            "dashboardId": "EP4Kz5tAYAA",
+            "isDefault": true,
+            "name": "ZXZX",
+            "type": "INTERNAL_LINK"
+        },
+        {
+            "dashboardGroupId": "D7Qsf00AgAA",
+            "dashboardId": "D7QshXDAcAE",
+            "isDefault": false,
+            "name": "fart",
+            "type": "INTERNAL_LINK"
+        }
+    ]
+}

@@ -50,6 +50,12 @@ responses_map = {
         'content': '',
         'status_code': 200,
         'method': 'PUT',
+    },
+    'GET_DATALINK': {
+        'path': '/v2/crosslink/abc123',
+        'content': open('tests/fixtures/get_datalink_abc123.json').read(),
+        'status_code': 200,
+        'method': 'GET',
     }
 }
 
@@ -135,6 +141,12 @@ class RESTTest(unittest.TestCase):
                 resp = sfx.clear_incident('abc123')
                 self.assertEqual(200, resp.status_code)
 
+    def test_get_datalink(self):
+        name = 'GET_DATALINK'
+        with HTTMock(mock_maker(name)):
+            with signalfx.SignalFx().rest('authkey') as sfx:
+                resp = sfx.get_datalink('abc123')
+                self.assertEqual(200, resp.status_code)
 
 class WebSocketTransportTest(unittest.TestCase):
 
