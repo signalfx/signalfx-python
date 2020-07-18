@@ -6,6 +6,7 @@ import json
 import logging
 import pprint
 import requests
+from requests.exceptions import ConnectionError
 import six
 from six.moves import queue
 import threading
@@ -62,17 +63,20 @@ class _BaseSignalFxIngestClient(object):
         self._lock = threading.Lock()
         self._error_counters = collections.defaultdict(lambda: 0)
 
-        user_agent = ['{0}/{1}'.format(version.name, version.version)]
+        self._user_agent = ['{0}/{1}'.format(version.name, version.version)]
         if type(user_agents) == list:
-            user_agent.extend(user_agents)
+            self._user_agent.extend(user_agents)
 
+        self._reconnect()
+
+    def _reconnect(self):
         self._session = requests.Session()
         self._session.headers.update({
             'X-SF-Token': self._token,
-            'User-Agent': ' '.join(user_agent),
+            'User-Agent': ' '.join(self._user_agent),
         })
 
-        if compress:
+        if self._compress:
             self._session.headers.update({
                 'Content-Encoding': 'gzip'
             })
@@ -267,7 +271,16 @@ class _BaseSignalFxIngestClient(object):
             _logger.debug('Compressed payload from %d to %d bytes',
                           uncompressed_bytes, len(data))
 
-        response = session.post(url, data=data, timeout=timeout)
+        try:
+            response = session.post(url, data=data, timeout=timeout)
+        except ConnectionError:
+            if session is self._session:
+                _logger.debug('Connection error attempting reconnect')
+                self._reconnect()
+                session = self._session
+                response = session.post(url, data=data, timeout=timeout)
+            else:
+                raise
         _logger.debug('Sending to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
