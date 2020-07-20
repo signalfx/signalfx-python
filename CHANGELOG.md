@@ -31,6 +31,8 @@ This file documents important changes to the SignalFx Python client library.
 * Fix some broken tests and flake8 problems.
 * Handle ConnectionErrors caused by faulty urllib3 [#104](https://github.com/signalfx/signalfx-python/pull/104)
 * Add python version classifiers [#103](https://github.com/signalfx/signalfx-python/pull/103)
+* Adjust `get_aws_unique_id` to try ECS metadata before EC2. [#71](https://github.com/signalfx/signalfx-python/pull/71)
+* Add additional parameters to the client. [#105](https://github.com/signalfx/signalfx-python/pull/105)
 
 #### [1.1.7] - 2020-06-17: Fix Get Data Link
 

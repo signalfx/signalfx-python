@@ -43,7 +43,7 @@ def get_aws_unique_id(timeout=DEFAULT_AWS_TIMEOUT):
     and then the EC2 metadata service.
 
     Args:
-        timeout (int): How long to wait for a response from AWS metadata service
+        timeout (int): How long to wait for response from AWS metadata service
     """
     try:
         resp = requests.get(ECS_METADATA_URL, timeout=timeout)
