@@ -249,10 +249,10 @@ class WebSocketTransport(transport._SignalFlowTransport, WebSocketClient):
             del self._channels[channel]
 
     def _decode_datapoints(self, data):
-        def chunks(l, n):
-            """Yield successive n-sized chunks from l."""
-            for i in range(0, len(l), n):
-                yield l[i:i+n]
+        def chunks(parts, n):
+            """Yield successive n-sized chunks from parts."""
+            for i in range(0, len(parts), n):
+                yield parts[i:i+n]
 
         # Ignore count at data[0:4], we just go by chunks of 17.
         datapoints = []

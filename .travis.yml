@@ -1,8 +1,11 @@
 language: python
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-install: "pip install tox tox-travis"
+- '2.7'
+- '3.5'
+- '3.6'
+install: pip install tox tox-travis
 script: tox
 sudo: false
+env:
+  global:
+    secure: RTfsNexYTJSFaneE/gxYmQbSkvkIJaXzYzVD9lVeo2VxXAalwmGdmnUZTnH9bJj8CZVBYfudpb0m1OeCNuKdSsBn3vZwApr7kqg1Tr9eP2w2at8Fm6D4rAbN5D4D8bh5N5gUCRy2Wi0oTlYE4bbW80gnB3zauFxytDf0sqqbnW0=

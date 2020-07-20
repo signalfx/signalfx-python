@@ -148,6 +148,7 @@ class RESTTest(unittest.TestCase):
                 dl = sfx.get_datalink('abc123')
                 self.assertEqual(dl['id'], 'abc123')
 
+
 class WebSocketTransportTest(unittest.TestCase):
 
     def test_decode_binary_format_v1(self):

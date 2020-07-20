@@ -588,8 +588,10 @@ class SignalFxRestClient(object):
         return resp
 
     # functionality related to datalinks
-    def get_datalinks(self, context=None, propertyName=None, propertyValue=None, orderBy=None, offset=0, limit=None,
-                      **kwargs):
+    def get_datalinks(
+        self, context=None, propertyName=None, propertyValue=None,
+        orderBy=None, offset=0, limit=None, **kwargs
+    ):
         """Retrieve all data links.
         """
         resp = self._get(
