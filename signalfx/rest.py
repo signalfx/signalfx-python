@@ -525,7 +525,6 @@ class SignalFxRestClient(object):
         """
         resp = self._get(
             self._u(self._DETECTOR_ENDPOINT_SUFFIX, detector_id, 'events'),
-            None,
             **kwargs
         )
         resp.raise_for_status()
@@ -539,7 +538,6 @@ class SignalFxRestClient(object):
         """
         resp = self._get(
             self._u(self._DETECTOR_ENDPOINT_SUFFIX, detector_id, 'incidents'),
-            None,
             **kwargs
         )
         resp.raise_for_status()
