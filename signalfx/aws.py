@@ -33,7 +33,7 @@ DEFAULT_AWS_TIMEOUT = 1  # Timeout to connect to the AWS metadata service
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
 EC2_ID_URL = 'http://169.254.169.254/latest/dynamic/instance-identity/document'
 # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint.html
-ECS_METADATA_URL = '169.254.170.2/v2/metadata'
+ECS_METADATA_URL = 'http://169.254.170.2/v2/metadata'
 
 _logger = logging.getLogger(__name__)
 
