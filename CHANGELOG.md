@@ -1,6 +1,7 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
+- [[1.1.10] - 2020-08-04: Fix get_aws_unique_id](#120---2020-08-04--fix-get_aws_unique_id)
 - [[1.1.9] - 2020-07-21: Fix get_detector methods](#119---2020-07-21--fix-get_detector-methods)
 - [[1.1.8] - 2020-07-20: Fix tests and connection errors](#118---2020-07-20--fix-tests-and-connection-errors)
 - [[1.1.7] - 2020-06-17: Fix get data link](#117---2020-06-17-fix-get-data-link)
@@ -26,6 +27,10 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.10] - 2020-08-04: Fix get_aws_unique_id
+
+Fix an exception in calling `get_aws_unique_id`.
 
 #### [1.1.9] - 2020-07-21: Fix get_detector methods
 
