@@ -302,6 +302,12 @@ class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
             'Content-Type': 'application/x-protobuf'
         })
 
+    def _reconnect(self):
+        super(ProtoBufSignalFxIngestClient, self)._reconnect()
+        self._session.headers.update({
+            'Content-Type': 'application/x-protobuf'
+        })
+
     def _add_to_queue(self, metric_type, datapoint):
         pbuf_dp = sf_pbuf.DataPoint()
         self._assign_value(pbuf_dp, datapoint['value'])
@@ -401,6 +407,12 @@ class JsonSignalFxIngestClient(_BaseSignalFxIngestClient):
 
     def __init__(self, token, **kwargs):
         super(JsonSignalFxIngestClient, self).__init__(token, **kwargs)
+        self._session.headers.update({
+            'Content-Type': 'application/json',
+        })
+
+    def _reconnect(self):
+        super(JsonSignalFxIngestClient, self)._reconnect()
         self._session.headers.update({
             'Content-Type': 'application/json',
         })
