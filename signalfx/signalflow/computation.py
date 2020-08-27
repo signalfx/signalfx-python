@@ -166,9 +166,8 @@ class Computation(object):
                 self._process_info_message(message.message)
                 self._batch_count_detected = True
                 yield message
-                # TODO: InfoMessages are coming before DataMessages
-                # if self._current_batch_message:
-                #     yield self._get_batch_to_yield()
+                if self._current_batch_message:
+                    yield self._get_batch_to_yield()
                 continue
 
             # Accumulate data messages and release them when we have received
