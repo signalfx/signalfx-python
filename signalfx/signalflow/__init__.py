@@ -33,9 +33,8 @@ class SignalFlowClient(object):
 
     def execute(self, program, start=None, stop=None, resolution=None,
                 max_delay=None, persistent=False, immediate=False,
-                disable_all_metric_publishes=None,
-                withDerivedMetadata=None, resolutionAdjustable=None,
-                timezone=None):
+                disable_all_metric_publishes=None, withDerivedMetadata=None,
+                resolutionAdjustable=None, timezone=None):
         """Execute the given SignalFlow program and stream the output back."""
         params = self._get_params(
                 start=start, stop=stop, resolution=resolution,
