@@ -284,6 +284,7 @@ class _BaseSignalFxIngestClient(object):
         _logger.debug('Sending to SignalFx %s (%d %s)',
                       'succeeded' if response.ok else 'failed',
                       response.status_code, response.text)
+        return response
 
 
 class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
