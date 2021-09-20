@@ -1,9 +1,11 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
-- [[1.1.12] - 2020-08-25: Fix some signaflow defaults](#121---2020-08-24--fix-some-signalflow-defaults)
-- [[1.1.11] - 2020-08-24: Fix reconnection](#121---2020-08-24--fix-reconnection)
-- [[1.1.10] - 2020-08-04: Fix get_aws_unique_id](#120---2020-08-04--fix-get_aws_unique_id)
+- [[1.1.14] - 2021-09-20: Add timezone support](#1114---2021-09-20--add-timezone-support)
+- [[1.1.13] - 2020-08-27: Fix issue with multiple data blocks](#1113---2020-08-27--fix-issue-with-multiple-data-blocks)
+- [[1.1.12] - 2020-08-25: Fix some signaflow defaults](#1112---2020-08-24--fix-some-signalflow-defaults)
+- [[1.1.11] - 2020-08-24: Fix reconnection](#1111---2020-08-24--fix-reconnection)
+- [[1.1.10] - 2020-08-04: Fix get_aws_unique_id](#1110---2020-08-04--fix-get_aws_unique_id)
 - [[1.1.9] - 2020-07-21: Fix get_detector methods](#119---2020-07-21--fix-get_detector-methods)
 - [[1.1.8] - 2020-07-20: Fix tests and connection errors](#118---2020-07-20--fix-tests-and-connection-errors)
 - [[1.1.7] - 2020-06-17: Fix get data link](#117---2020-06-17-fix-get-data-link)
@@ -29,6 +31,17 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.14] - 2021-09-20: Add timezone support
+
+* Adds support for specifying the SignalFlow computation timezone. [#114](https://github.com/signalfx/signalfx-python/pull/114)
+* Fix links in `CHANGELOG.md`.
+* Add `DEVELOPING.md` file with release instructions.
+
+#### [1.1.13] - 2020-08-27: Fix issue with multiple data blocks
+
+Fix an issue consuming output from SignalFlow computations that include
+multiple `data()` blocks. [#112](https://github.com/signalfx/signalfx-python/pull/112)
 
 #### [1.1.12] - 2020-08-25: Fix some signalflow defaults
 
