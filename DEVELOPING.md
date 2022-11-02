@@ -2,7 +2,18 @@
 
 This is a guide for developing on this repository and this library. For
 instructions on how to _use_ `signalfx-python`, please refer to the
-README.md file.
+README.rst file.
+
+## Updating protobuf definitions
+
+This library uses [generated code](./signalfx/generated_protocol_buffers) from the SignalFx protobuf definitions.
+To update as necessary, from the root project directory run:
+
+```bash
+$ scripts/genproto.sh
+```
+
+And commit the updated [signal_fx_protocol_buffers_pb2.py](./signalfx/generated_protocol_buffers/signal_fx_protocol_buffers_pb2.py) after vetting the live tests with `tox`.
 
 ## Making a release
 
