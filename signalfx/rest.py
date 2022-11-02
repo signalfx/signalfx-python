@@ -367,8 +367,8 @@ class SignalFxRestClient(object):
         return resp
 
     def get_dashboard_groups(self, name=None, batch_size=100, **kwargs):
-        """Retrieve all (v2) dashboard groupss matching the given name; all (v2)
-        dashboard groups otherwise.
+        """Retrieve all (v2) dashboard groupss matching the given name;
+        all (v2) dashboard groups otherwise.
 
         Note that this method will loop through the paging of the results and
         accumulate all dashboard groups that match the query.

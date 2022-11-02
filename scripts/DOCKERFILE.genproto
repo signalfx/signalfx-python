@@ -1,0 +1,13 @@
+FROM debian:buster
+
+ARG PROTOC_VERSION=3.5.1
+
+RUN mkdir -p /usr/src/signalfx-python/
+WORKDIR /tmp
+
+RUN apt-get update && apt-get install wget unzip -y
+RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
+    unzip protoc*.zip -d protoc
+
+RUN wget https://raw.githubusercontent.com/signalfx/signalfx-java/main/signalfx-protoc/src/main/protobuf/signal_fx_protocol_buffers.proto
+RUN protoc/bin/protoc signal_fx_protocol_buffers.proto --python_out /usr/src/signalfx-python
