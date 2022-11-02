@@ -1,6 +1,8 @@
 ### CHANGELOG
 
 This file documents important changes to the SignalFx Python client library.
+- [[1.1.16] - 2022-11-02: Relax protobuf 3.x dep](#1116---2022-11-02-relax-protobuf-3x-dep)
+- [[1.1.15] - 2022-06-02: Pin latest protobuf 3.x](#1115---2022-06-02-pin-latest-protobuf-3x)
 - [[1.1.14] - 2021-09-20: Add timezone support](#1114---2021-09-20--add-timezone-support)
 - [[1.1.13] - 2020-08-27: Fix issue with multiple data blocks](#1113---2020-08-27--fix-issue-with-multiple-data-blocks)
 - [[1.1.12] - 2020-08-25: Fix some signaflow defaults](#1112---2020-08-24--fix-some-signalflow-defaults)
@@ -31,6 +33,14 @@ This file documents important changes to the SignalFx Python client library.
 - [[1.0.7] - 2016-10-05: More Python 3 compatibility](#107---2016-10-05-more-python-3-compatibility)
 - [[1.0.5] - 2016-09-29: Python 3 compatibility](#105---2016-09-29-python-3-compatibility)
 - [[1.0.1] - 2016-06-02: Support for SignalFlow API](#101---2016-06-02-support-for-signalflow-api)
+
+#### [1.1.16] - 2022-11-02: Relax protobuf 3.x dep
+
+* Relaxes overstrict protobuf pin to be <4.21.0. [#132](https://github.com/signalfx/signalfx-python/pull/132)
+
+#### [1.1.15] - 2022-06-02: Pin latest protobuf 3.x
+
+* Pins to latest 3.x protobuf to avoid breaking version 4.21.0. [#126](https://github.com/signalfx/signalfx-python/pull/126)
 
 #### [1.1.14] - 2021-09-20: Add timezone support
 
