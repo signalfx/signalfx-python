@@ -39,6 +39,7 @@ in-depth examples.
 # Copyright (C) 2015-2017 SignalFx, Inc. All rights reserved.
 
 import logging
+import os
 import requests
 
 from .constants import DEFAULT_API_ENDPOINT, DEFAULT_INGEST_ENDPOINT, \
@@ -53,7 +54,7 @@ __all__ = ['SignalFx']
 __version__ = version.version
 
 _logger = logging.getLogger(__name__)
-
+_logger.setLevel(os.getenv('SIGNALFX_LOGLEVEL', 'INFO').upper())
 
 class SignalFx(object):
     """SignalFx client.
