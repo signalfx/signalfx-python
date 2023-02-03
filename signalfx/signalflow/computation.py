@@ -166,7 +166,8 @@ class Computation(object):
                 self._process_info_message(message.message)
                 self._batch_count_detected = True
                 yield message
-                if self._current_batch_message:
+                if (self._current_batch_message and
+                        self._current_batch_count == self._expected_batches):
                     yield self._get_batch_to_yield()
                 continue
 
