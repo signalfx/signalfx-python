@@ -18,7 +18,7 @@ if args.token == "invalid":
 else:
     MY_TOKEN = os.environ['SIGNALFX_API_TOKEN']
 sfx = signalfx.SignalFx().ingest(MY_TOKEN)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 # Basic Usage
 sfx.send(
