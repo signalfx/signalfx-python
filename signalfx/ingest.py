@@ -6,7 +6,7 @@ import json
 import logging
 import pprint
 import requests
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, HTTPError
 import six
 from six.moves import queue
 import threading
@@ -57,6 +57,7 @@ class _BaseSignalFxIngestClient(object):
         self._compress = compress
 
         self._extra_dimensions = {}
+        self._response = None
 
         self._queue = queue.Queue()
         self._thread_running = False
@@ -183,7 +184,7 @@ class _BaseSignalFxIngestClient(object):
         self._add_extra_dimensions(data)
         return self._send_event(event_data=data, url='{0}/{1}'.format(
             self._endpoint, self._INGEST_ENDPOINT_EVENT_SUFFIX),
-            session=self._session)
+                                session=self._session)
 
     def _send_event(self, event_data=None, url=None, session=None):
         raise NotImplementedError('Subclasses should implement this!')
@@ -272,18 +273,20 @@ class _BaseSignalFxIngestClient(object):
                           uncompressed_bytes, len(data))
 
         try:
-            response = session.post(url, data=data, timeout=timeout)
+            self._response = session.post(url, data=data, timeout=timeout)
         except ConnectionError:
             if session is self._session:
                 _logger.debug('Connection error attempting reconnect')
                 self._reconnect()
                 session = self._session
-                response = session.post(url, data=data, timeout=timeout)
+                self._response = session.post(url, data=data, timeout=timeout)
             else:
                 raise
-        _logger.debug('Sending to SignalFx %s (%d %s)',
-                      'succeeded' if response.ok else 'failed',
-                      response.status_code, response.text)
+        try:
+            self._response.raise_for_status()
+        except HTTPError as e:
+            logging.error(e)
+            return False
 
 
 class ProtoBufSignalFxIngestClient(_BaseSignalFxIngestClient):
