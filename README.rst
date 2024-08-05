@@ -269,6 +269,14 @@ See `examples/pyformance_usecase.py`_ for a complete code example using Pyforman
 Executing SignalFlow computations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+   **WARNING**: The SignalFlow functionality in this repository has been migrated to
+   `github.com/signalfx/signalflow-client-python`_ and is now available via the
+   `signalflow-client-python`_ package. Please note that SignalFlow functionality in this
+   repository is **deprecated** and will be removed in future releases.
+
+.. _github.com/signalfx/signalflow-client-python: https://github.com/signalfx/signalflow-client-python
+.. _signalflow-client-python: https://pypi.org/project/signalflow-client-python/
+
 SignalFlow is SignalFx's real-time analytics computation language. The
 SignalFlow API allows SignalFx users to execute real-time streaming analytics
 computations on the SignalFx platform. For more information, head over to our
