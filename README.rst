@@ -1,6 +1,27 @@
 SignalFx was acquired by Splunk in October 2019. See https://www.splunk.com/en_us/investor-relations/acquisitions/signalfx.html for more information.
 
+
+
 Python client library for SignalFx
+==================================
+
+:warning:This repository and its published libraries are deprecated
+
+This repository contains legacy libraries for reporting metrics to Splunk 
+Observability Cloud (formerly SignalFx). The only commits that will be made 
+to this repo are organizational or security related patches. No additional 
+features will be added, and the repository will be archived and the final 
+versions published on or prior to March 1, 2025.
+
+:warning:This repo will be archived March 1st 2025.
+
+Splunk has adopted OpenTelemetry. Please visit official documentation page: `Instrument Python applications for Splunk Observability Cloud`_. Use `Splunk Distribution of OpenTelemetry Python Instrumentation`_  or 
+`OpenTelemetry Python SDK`_ to send telemetry data to Splunk Observability Cloud. 
+Do not integrate `signalfx-python` into new services.
+
+.. _Instrument Python applications for Splunk Observability Cloud: https://docs.splunk.com/observability/en/gdi/get-data-in/application/python/get-started.html#get-started-python
+.. _Splunk Distribution of OpenTelemetry Python Instrumentation: https://github.com/signalfx/splunk-otel-python
+.. _OpenTelemetry Python SDK: https://github.com/open-telemetry/opentelemetry-python
 ==================================
 
 This is a programmatic interface in Python for SignalFx's metadata and
